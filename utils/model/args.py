@@ -22,6 +22,15 @@ def get_args():
     arg_parser.add_argument('--step_size', type=int, default=5, help='')
     arg_parser.add_argument('--gamma', type=float, default=0.90, help='')
     arg_parser.add_argument('--epochs', type=int, default=150, help='')
+    
+    '''
+    TODO:
+    add some args
+    '''
+    arg_parser.add_argument('--domain_config_path', type=str, default='./datas/baseline_domain_weights.json', help='')
+    arg_parser.add_argument('--output_dir', type=str, default='./results', help='')
+    arg_parser.add_argument('--reweight_eta', type=float, default=1.0, help='')
+    arg_parser.add_argument('--reweight_eps', type=float, default=1e-4, help='')
 
     args = arg_parser.parse_args()
     return args

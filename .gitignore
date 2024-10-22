@@ -159,7 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 # .idea/
 
-datas/datasets/
+datas/datasets
 datas/datasets.tar.gz
-setup/features/
-results/*.sql
+datas/statistics/*/*/gen_*
+results/
+setup/features*/

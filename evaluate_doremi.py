@@ -45,10 +45,15 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
                         hist_dim=args.bin_size, table_dim=args.table_dim, filter_dim=args.filter_dim,
                         query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                         n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
+model.register_buffer('train_domain_weights', torch.tensor(
+        [1.0] * 26))
+model.register_buffer('avg_domain_weights', model.train_domain_weights.clone())
+model.register_buffer('perdomain_scores', torch.tensor(1.0))
+model.register_buffer('update_counter', torch.tensor(1))
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/model_params_hockey.pth'
+model_path = f'{current_dir}/results/doremi_pretrain_params.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 
@@ -89,3 +94,4 @@ for idx, current_dataloader in enumerate(test_loaders_list):
 
 print('done!')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+print(model.train_domain_weights)

@@ -47,7 +47,7 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
                         hist_dim=args.bin_size, table_dim=args.table_dim, filter_dim=args.filter_dim,
                         query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                         n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
-model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
+# model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
@@ -60,6 +60,7 @@ for epoch in range(args.epochs):
     all_output, all_label = [], []
     for i, (feature, label, pg_est_card, padding_mask, n_join_col, n_fanout, n_table, n_filter_col) in enumerate(train_loader):
         feature = feature.to(torch.float).to(device)
+        padding_mask = padding_mask.to(torch.float).to(device)
         n_join_col = n_join_col.to(torch.float).to(device).view(-1, 1)
         n_fanout = n_fanout.to(torch.float).to(device).view(-1, 1)
         n_table = n_table.to(torch.float).to(device).view(-1, 1)
