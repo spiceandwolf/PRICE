@@ -48,9 +48,8 @@ def create_workloads_features(filename, database, bin_size, usage, n_sqls=0):
         """
         TODO: control the number of sqls to be loaded 
         """
-        # if count > n_sqls:
-        #     print(f"sample {n_sqls} sqls")
-        #     break
+        if count > n_sqls:
+            break
 
         spilt_infos = line.split("||")
         sql, true_card, pg_est_card = spilt_infos[0], spilt_infos[1], spilt_infos[2]
@@ -111,7 +110,7 @@ def create_workloads_features(filename, database, bin_size, usage, n_sqls=0):
     n_tables = n_tables[:n_sqls]
     n_filter_cols = n_filter_cols[:n_sqls]
     print(f"sample {n_sqls} sqls")
-
+    
     print(f"average processing time is: {total_time / count}ms.")
     return data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols
 
@@ -142,7 +141,7 @@ if __name__ == '__main__':
         with open(domain_weight_path, 'rb') as file:
             domain_info = json.load(file)
         n_sqls = round(domain_info["train_domain_weights"][db] * domain_info["total_num"])
-    # n_sqls = 30000
+    n_sqls = 3000
     
     path = f'{current_dir}/../datas/workloads/{usage}/{db}/workloads.sql'
     

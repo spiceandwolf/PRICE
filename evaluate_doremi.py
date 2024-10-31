@@ -21,6 +21,7 @@ torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
 TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']
+TEST_LIST_ADDITIONAL = ['accidents', 'airline', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer', 'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens', 'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
 
 args = get_args()
 print(args)
@@ -28,6 +29,22 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 test_data, test_labels, test_pg_est_cards, \
 test_n_join_cols, test_n_fanouts, test_n_tables, test_n_filter_cols, test_list_lens = load_dataset_features(bin_size=args.bin_size, dataset_list=TEST_LIST, train_or_test='test', usage='test')
+
+'''
+additional test - model_params_baseball.pth
+'''
+test_data_additional, test_labels_additional, test_pg_est_cards_additional, \
+test_n_join_cols_additional, test_n_fanouts_additional, test_n_tables_additional, \
+test_n_filter_cols_additional, test_list_lens_additional = load_dataset_features(bin_size=args.bin_size, dataset_list=TEST_LIST_ADDITIONAL, train_or_test='test', usage='pretrain')
+test_data += test_data_additional
+test_labels += test_labels_additional
+test_pg_est_cards += test_pg_est_cards_additional
+test_n_join_cols += test_n_join_cols_additional
+test_n_fanouts += test_n_fanouts_additional
+test_n_tables += test_n_tables_additional
+test_n_filter_cols += test_n_filter_cols_additional
+test_list_lens += test_list_lens_additional
+TEST_LIST += TEST_LIST_ADDITIONAL
 
 max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = max(test_n_join_cols), max(test_n_fanouts), max(test_n_tables), max(test_n_filter_cols)
 test_data, test_padding_masks = features_padding(args.bin_size, args.table_dim, args.filter_dim,
@@ -45,15 +62,19 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
                         hist_dim=args.bin_size, table_dim=args.table_dim, filter_dim=args.filter_dim,
                         query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                         n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
+'''
+the models based on doremi have these buffer
+
 model.register_buffer('train_domain_weights', torch.tensor(
         [1.0] * 26))
 model.register_buffer('avg_domain_weights', model.train_domain_weights.clone())
 model.register_buffer('perdomain_scores', torch.tensor(1.0))
 model.register_buffer('update_counter', torch.tensor(1))
+'''
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/doremi_pretrain_params.pth'
+model_path = f'{current_dir}/results/model_params_baseball.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 
@@ -90,8 +111,8 @@ for idx, current_dataloader in enumerate(test_loaders_list):
     workloads_test_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads.sql'
     workloads_all_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_all.sql'
     out_path = f'{current_dir}/results/{TEST_LIST[idx]}_perror_input.sql'
-    generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
+    # generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
 
 print('done!')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-print(model.train_domain_weights)
+# print(model.train_domain_weights)
