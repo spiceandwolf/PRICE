@@ -1,0 +1,450 @@
+server url is localhost, port is 36763
+sql: SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records: None
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {'/* (teams bkb_t) */ SELECT COUNT(*) FROM teams bkb_t WHERE (bkb_t.rank = 3);': 277.000008, '/* (players_teams bkb_pt) */ SELECT COUNT(*) FROM players_teams bkb_pt;': 23751.0, '/* (draft bkb_d) */ SELECT COUNT(*) FROM draft bkb_d;': 8621.0, '/* (series_post bkb_sp) */ SELECT COUNT(*) FROM series_post bkb_sp;': 775.0, '/* (coaches bkb_c) */ SELECT COUNT(*) FROM coaches bkb_c;': 1689.0, '/* (awards_coaches bkb_ac) */ SELECT COUNT(*) FROM awards_coaches bkb_ac;': 61.0, '/* (players bkb_p) */ SELECT COUNT(*) FROM players bkb_p WHERE (bkb_p.height = 75);': 474.999992, '/* (teams bkb_t, players_teams bkb_pt) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.rank = 3);': 133854.0, '/* (teams bkb_t, draft bkb_d) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.rank = 3);': 35448.0, '/* (teams bkb_t, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);': 5416.0, '/* (teams bkb_t, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, coaches bkb_c WHERE (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 9921.0, '/* (players_teams bkb_pt, series_post bkb_sp) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp WHERE (bkb_pt.tmid = bkb_sp.tmidwinner);': 450766.0, '/* (players_teams bkb_pt, coaches bkb_c) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c WHERE (bkb_pt.tmid = bkb_c.tmid);': 844699.0, '/* (players_teams bkb_pt, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, players bkb_p WHERE (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 2229.0, '/* (series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM series_post bkb_sp, coaches bkb_c WHERE (bkb_sp.tmidwinner = bkb_c.tmid);': 34116.0, '/* (coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_c.year = bkb_ac.year);': 1641.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.rank = 3);': 17129390.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);': 2617026.0, '/* (teams bkb_t, players_teams bkb_pt, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 4794300.0, '/* (teams bkb_t, players_teams bkb_pt, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 12560.0, '/* (teams bkb_t, draft bkb_d, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);': 693056.0, '/* (teams bkb_t, draft bkb_d, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, coaches bkb_c WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 1269655.0, '/* (teams bkb_t, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 193987.0, '/* (teams bkb_t, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 9638.0, '/* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid);': 16031394.0, '/* (players_teams bkb_pt, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 42298.0, '/* (players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);': 820641.0, '/* (players_teams bkb_pt, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, players bkb_p WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 79264.0, '/* (series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);': 33144.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);': 334902584.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 613529911.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 1607361.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 93735021.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 245572.0, '/* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 4657751.0, '/* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 449880.0, '/* (teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 24823452.0, '/* (teams bkb_t, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 1233493.0, '/* (teams bkb_t, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 188462.0, '/* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);': 15574796.0, '/* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 1504329.0, '/* (players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 77006.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);': 11995333908.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 31426062.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 596055655.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 57571455.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 91065306.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 8795760.0, '/* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 437067.0, '/* (teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 24116443.0, '/* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);': 1461483.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);': 11653688740.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 1125599290.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 55931734.0, '/* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 8545243.0, '/* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);': 1093540528.0}
+sql: /* (teams bkb_t) */ SELECT COUNT(*) FROM teams bkb_t WHERE (bkb_t.rank = 3);
+records:    count
+0    277
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt) */ SELECT COUNT(*) FROM players_teams bkb_pt;
+records:    count
+0  23751
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (draft bkb_d) */ SELECT COUNT(*) FROM draft bkb_d;
+records:    count
+0   8621
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (series_post bkb_sp) */ SELECT COUNT(*) FROM series_post bkb_sp;
+records:    count
+0    775
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (coaches bkb_c) */ SELECT COUNT(*) FROM coaches bkb_c;
+records:    count
+0   1689
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (awards_coaches bkb_ac) */ SELECT COUNT(*) FROM awards_coaches bkb_ac;
+records:    count
+0     61
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players bkb_p) */ SELECT COUNT(*) FROM players bkb_p WHERE (bkb_p.height = 75);
+records:    count
+0    475
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.rank = 3);
+records:     count
+0  136135
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.rank = 3);
+records:    count
+0  36615
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);
+records:    count
+0   5219
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, coaches bkb_c WHERE (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:    count
+0  10127
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp WHERE (bkb_pt.tmid = bkb_sp.tmidwinner);
+records:     count
+0  451689
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, coaches bkb_c) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c WHERE (bkb_pt.tmid = bkb_c.tmid);
+records:     count
+0  844595
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, players bkb_p WHERE (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:    count
+0   1874
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM series_post bkb_sp, coaches bkb_c WHERE (bkb_sp.tmidwinner = bkb_c.tmid);
+records:    count
+0  34183
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_c.year = bkb_ac.year);
+records:    count
+0   1809
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.rank = 3);
+records:       count
+0  17671495
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);
+records:      count
+0  3759883
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:      count
+0  6848095
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:    count
+0  10313
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);
+records:     count
+0  689473
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, coaches bkb_c WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:      count
+0  1351393
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:     count
+0  287551
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:    count
+0  10994
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid);
+records:       count
+0  24530496
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:    count
+0  32105
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);
+records:     count
+0  908788
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, players bkb_p WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:    count
+0  61377
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);
+records:    count
+0  36453
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.rank = 3);
+records:        count
+0  495095263
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:        count
+0  913713970
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:      count
+0  1334565
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:        count
+0  225416089
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:     count
+0  277041
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:      count
+0  7409506
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:     count
+0  517286
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);
+records:       count
+0  38258854
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:      count
+0  1528930
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:     count
+0  307889
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year);
+records:       count
+0  26096347
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:      count
+0  1733855
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:    count
+0  65998
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 36763, "url": "localhost", "tid": "139786001011904"} pilotscope*/ /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+None
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:       count
+0  36782349
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:        count
+0  999776310
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:       count
+0  69306381
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:        count
+0  238278662
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:       count
+0  16713915
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:     count
+0  559592
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);
+records:       count
+0  41451393
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_pt.tmid = bkb_c.tmid) AND (bkb_sp.tmidwinner = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_p.height = 75);
+records:      count
+0  1842203
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 36763, "url": "localhost", "tid": "139786001011904"} pilotscope*/ /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_t.rank = 3);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+None
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:         count
+0  2249025015
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:       count
+0  75743833
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:       count
+0  17667693
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}
+sql: /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c, awards_coaches bkb_ac, players bkb_p WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_c.year = bkb_ac.year) AND (bkb_pt.playerid = bkb_p.id) AND (bkb_t.rank = 3) AND (bkb_p.height = 75);
+records:         count
+0  2388143115
+physical_plan: None
+execution_time: None
+estimated_cost: None
+buffercache: None
+subquery_2_card: {}

@@ -20,10 +20,10 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
-TRAIN_LIST = ['accidents', 'airline', 'baseball', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer',
-              'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens',
-              'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
-
+# TRAIN_LIST = ['accidents', 'airline', 'baseball', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer',
+#               'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens',
+#               'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
+TRAIN_LIST = ['baseball']
 args = get_args()
 print(args)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -88,6 +88,6 @@ for epoch in range(args.epochs):
     print('train q-error: 30%:', q_error[0], '  50%:', q_error[1], '  80%:', q_error[2], '  90%:', q_error[3], '  95%:', q_error[4], '  99%:', q_error[5])
 
 print('done!')
-torch.save(model.state_dict(), f'results/pretrain_params.pth')
-print('model saved in results/pretrain_params.pth')
+torch.save(model.state_dict(), f'results/test_pretrain_params.pth')
+print('model saved in results/test_pretrain_params.pth')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import numpy as np
 from pilotscope.DBInteractor.PilotDataInteractor import PilotDataInteractor
@@ -14,7 +15,7 @@ def calc_percentile_list(l, percentile_list):
     return p_list
 
 
-def calc_test_set_p_error(test_set_filename, test_set_db, pg_or_model, db_host="localhost", db_user="postgres", db_user_pwd="postgres", db_port=5456):
+def calc_test_set_p_error(test_set_filename, test_set_db, pg_or_model, db_host="localhost", db_user="postgres", db_user_pwd="postgres", db_port=5433):
     """
     :param test_set_filename: the file path of test set (sql, true_card, model_est_card)
     :param test_set_db: the database of test set
@@ -72,8 +73,20 @@ def calc_test_set_p_error(test_set_filename, test_set_db, pg_or_model, db_host="
 
 
 if __name__ == '__main__':
-    test_set_filename = f""
-    test_set_db = f""
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('--dataset_name', type=str,)
+    arg_parser.add_argument('--workload_in_path', type=str,)
+    arg_parser.add_argument('--workload_out_path', type=str,)
+    args = arg_parser.parse_args()
+    
+    # test_set_filename = f"/home/user/oblab/PRICE/results/imdb_perror_input.sql"
+    # test_set_filename = f"/home/user/oblab/PRICE/results/stats_perror_input.sql"
+    # test_set_filename = f"/home/user/oblab/PRICE/results/ergastf1_perror_input.sql"
+    test_set_filename = f"/home/user/oblab/PRICE/results/genome_perror_input.sql"
+    # test_set_db = f"imdb"
+    # test_set_db = f"stats"
+    # test_set_db = f"ergastf1"
+    test_set_db = f"{args.dataset_name}"
     print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print(f"test_set_db: {test_set_db}, test_set_filename: {test_set_filename}")
 

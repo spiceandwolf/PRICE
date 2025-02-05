@@ -19,6 +19,7 @@ def generate_perror_input(model_pred_cards, out_path, workloads_test_file_path, 
         tags.append(tag)
 
     assert len(tags) == len(model_pred_cards), f"len(tags): {len(tags)}, len(model_pred_cards): {len(model_pred_cards)}"
+    print(f"len(tags): {len(tags)}, len(model_pred_cards): {len(model_pred_cards)}")
 
     if do_scale:
         model_pred_cards = np.exp(model_pred_cards - 1) - 1

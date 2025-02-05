@@ -20,31 +20,16 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
-TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']
-TEST_LIST_ADDITIONAL = ['accidents', 'airline', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer', 'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens', 'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
+# TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']
+# TEST_LIST = ['accidents', 'airline', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer', 'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens', 'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
+TEST_LIST = ['accidents']
 
 args = get_args()
 print(args)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 test_data, test_labels, test_pg_est_cards, \
-test_n_join_cols, test_n_fanouts, test_n_tables, test_n_filter_cols, test_list_lens = load_dataset_features(bin_size=args.bin_size, dataset_list=TEST_LIST, train_or_test='test', usage='test')
-
-'''
-additional test - model_params_baseball.pth
-'''
-test_data_additional, test_labels_additional, test_pg_est_cards_additional, \
-test_n_join_cols_additional, test_n_fanouts_additional, test_n_tables_additional, \
-test_n_filter_cols_additional, test_list_lens_additional = load_dataset_features(bin_size=args.bin_size, dataset_list=TEST_LIST_ADDITIONAL, train_or_test='test', usage='pretrain')
-test_data += test_data_additional
-test_labels += test_labels_additional
-test_pg_est_cards += test_pg_est_cards_additional
-test_n_join_cols += test_n_join_cols_additional
-test_n_fanouts += test_n_fanouts_additional
-test_n_tables += test_n_tables_additional
-test_n_filter_cols += test_n_filter_cols_additional
-test_list_lens += test_list_lens_additional
-TEST_LIST += TEST_LIST_ADDITIONAL
+test_n_join_cols, test_n_fanouts, test_n_tables, test_n_filter_cols, test_list_lens = load_dataset_features(bin_size=args.bin_size, dataset_list=TEST_LIST, train_or_test='test', usage='pretrain')
 
 max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = max(test_n_join_cols), max(test_n_fanouts), max(test_n_tables), max(test_n_filter_cols)
 test_data, test_padding_masks = features_padding(args.bin_size, args.table_dim, args.filter_dim,
@@ -103,15 +88,17 @@ for idx, current_dataloader in enumerate(test_loaders_list):
     test_loss = test_loss / len(current_dataloader.dataset)
     print(f"{TEST_LIST[idx]} loss: {test_loss}")
     q_error = get_qerror(output, label, cuda=True, do_scale=True, percentile_list=[30, 50, 80, 90, 95, 99])
+    pg_q_error = get_qerror(pg_est_card, label, cuda=True, do_scale=True, percentile_list=[30, 50, 80, 90, 95, 99])
+    print(f'pg q-error: 30%:', pg_q_error[0], '  50%:', pg_q_error[1], '  80%:', pg_q_error[2], '  90%:', pg_q_error[3], '  95%:', pg_q_error[4], '  99%:', pg_q_error[5])
     print(f'{TEST_LIST[idx]} q-error: 30%:', q_error[0], '  50%:', q_error[1], '  80%:', q_error[2], '  90%:', q_error[3], '  95%:', q_error[4], '  99%:', q_error[5])
     interval_qerror(output, label, cuda=True, do_scale=True)
 
     # to generate p-error input file
     output1 = output[0].detach().cpu().numpy()
-    workloads_test_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads.sql'
-    workloads_all_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_all.sql'
+    workloads_test_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_3000_test.sql'
+    workloads_all_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_3000_test_all.sql'
     out_path = f'{current_dir}/results/{TEST_LIST[idx]}_perror_input.sql'
-    # generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
+    generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
 
 print('done!')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

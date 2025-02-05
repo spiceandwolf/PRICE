@@ -46,9 +46,9 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
                         query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                         n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
-# model = nn.DataParallel(model)
+model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/model_params_hockey.pth'
+model_path = f'{current_dir}/results/model_params.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 

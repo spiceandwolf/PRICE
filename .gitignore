@@ -162,5 +162,7 @@ cython_debug/
 datas/datasets
 datas/datasets.tar.gz
 datas/statistics/*/*/gen_*
+datas/workloads/*/*/workloads*
 results/
 setup/features*/
+

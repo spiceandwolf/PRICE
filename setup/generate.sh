@@ -15,7 +15,8 @@ mkdir -p $BASEDIR/features_log/finetune
 for db in accidents airline baseball basketball carcinogenesis ccs chembl consumer credit employee financial fnhk grants hepatitis hockey legalacts movielens sakila sap seznam ssb talkingdata telstra tournament tpc_h tubepricing
 do
     # nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage pretrain --reweight > $BASEDIR/features_log/pretrain/${db}_${bin_size}.log 2>&1 &
-    nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage pretrain > $BASEDIR/features_log/pretrain/${db}_${bin_size}.log 2>&1 &
+    # nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage pretrain > $BASEDIR/features_log/pretrain/${db}_${bin_size}.log 2>&1 &
+    nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage pretrain --little_testset --n_sql_test 3000 > $BASEDIR/features_log/pretrain/${db}_${bin_size}.log 2>&1 &
 done
 
 # unseen dataset to test

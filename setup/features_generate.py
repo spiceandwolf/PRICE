@@ -40,15 +40,21 @@ def create_workloads_features(filename, database, bin_size, usage, n_sqls=0):
     count = 0
     total_time = 0
     for line in lines:
-
+        
         count = count + 1
         if count % 100 == 0:
             print(count)
             
-        """
-        TODO: control the number of sqls to be loaded 
-        """
+        # """
+        # TODO: control the number of sqls to be loaded 
+        # """
         if count > n_sqls:
+            
+            workload_out_path = filename.strip().rsplit('.', 1)[0] + f'_{n_sqls}.sql'
+            print(f'create {database} subquery in {workload_out_path}')
+            with open(workload_out_path, "w") as f:
+                for sql in lines[:n_sqls]:
+                    f.write(sql.strip() + "\n")
             break
 
         spilt_infos = line.split("||")
@@ -102,14 +108,14 @@ def create_workloads_features(filename, database, bin_size, usage, n_sqls=0):
     #     n_filter_cols = n_filter_cols_chosen
         
     #     print(f"sample {n_sqls} sqls")
-    data_features = data_features[:n_sqls]
-    true_cards = true_cards[:n_sqls]
-    pg_est_cards = pg_est_cards[:n_sqls]
-    n_join_cols = n_join_cols[:n_sqls]
-    n_fanouts = n_fanouts[:n_sqls]
-    n_tables = n_tables[:n_sqls]
-    n_filter_cols = n_filter_cols[:n_sqls]
-    print(f"sample {n_sqls} sqls")
+    # data_features = data_features[:n_sqls]
+    # true_cards = true_cards[:n_sqls]
+    # pg_est_cards = pg_est_cards[:n_sqls]
+    # n_join_cols = n_join_cols[:n_sqls]
+    # n_fanouts = n_fanouts[:n_sqls]
+    # n_tables = n_tables[:n_sqls]
+    # n_filter_cols = n_filter_cols[:n_sqls]
+    # print(f"sample {n_sqls} sqls")
     
     print(f"average processing time is: {total_time / count}ms.")
     return data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols
@@ -127,6 +133,8 @@ if __name__ == '__main__':
     
     # experiment
     arg_parser.add_argument('--reweight', action="store_true", help='change the number of each sql dataset used to be trained')
+    arg_parser.add_argument('--little_testset', action="store_true", help='use a little sql dataset to test')
+    arg_parser.add_argument('--n_sql_test', type=int, default=0, help='the number of each sql dataset used to be tested')
     
     args = arg_parser.parse_args()
     db = args.db
@@ -141,14 +149,19 @@ if __name__ == '__main__':
         with open(domain_weight_path, 'rb') as file:
             domain_info = json.load(file)
         n_sqls = round(domain_info["train_domain_weights"][db] * domain_info["total_num"])
-    n_sqls = 3000
+    
+    little_testset = args.little_testset
+    if little_testset:    
+        n_sqls = args.n_sql_test
     
     path = f'{current_dir}/../datas/workloads/{usage}/{db}/workloads.sql'
     
     starttime = datetime.datetime.now()
-    # data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = create_workloads_features(path, database=db, bin_size=bin_size, usage=usage)
+    if reweight == False and little_testset == False:
+        data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = create_workloads_features(path, database=db, bin_size=bin_size, usage=usage)
     # experiment
-    data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = create_workloads_features(path, database=db, bin_size=bin_size, usage=usage, n_sqls=n_sqls)
+    else:
+        data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = create_workloads_features(path, database=db, bin_size=bin_size, usage=usage, n_sqls=n_sqls)
     endtime = datetime.datetime.now()
     print(f"create dataset time: {(endtime - starttime).seconds}s")
     

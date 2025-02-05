@@ -1,0 +1,744 @@
+nohup: ignoring input
+dataset: accidents, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/accidents/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/accidents/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/accidents/workloads_all.sql
+server url is localhost, port is 37181
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: accidents
+dataset: airline, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/airline/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/airline/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/airline/workloads_all.sql
+server url is localhost, port is 34901
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: airline
+dataset: baseball, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/baseball/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/baseball/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/baseball/workloads_all.sql
+server url is localhost, port is 49493
+0 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 49493, "url": "localhost", "tid": "140139004974272"} pilotscope*/ /* (batting bb_bat, els_teamnames bb_etn, allstarfull bb_asf, salaries bb_slr) */ SELECT COUNT(*) FROM batting bb_bat, els_teamnames bb_etn, allstarfull bb_asf, salaries bb_slr WHERE (bb_bat.teamid = bb_etn.teamid) AND (bb_etn.teamid = bb_asf.teamid) AND (bb_bat.teamid = bb_slr.teamid) AND (bb_bat.bb < 53);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: basketball, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/basketball/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/basketball/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/basketball/workloads_all.sql
+server url is localhost, port is 51853
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 51853, "url": "localhost", "tid": "140043048350912"} pilotscope*/ /* (teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c) */ SELECT COUNT(*) FROM teams bkb_t, players_teams bkb_pt, draft bkb_d, series_post bkb_sp, coaches bkb_c WHERE (bkb_t.id = bkb_pt.tmid) AND (bkb_t.year = bkb_d.draftyear) AND (bkb_pt.tmid = bkb_sp.tmidwinner) AND (bkb_t.id = bkb_c.tmid) AND (bkb_t.rank = 3);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: carcinogenesis, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/carcinogenesis/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/carcinogenesis/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/carcinogenesis/workloads_all.sql
+server url is localhost, port is 48971
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: carcinogenesis
+dataset: ccs, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/ccs/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/ccs/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/ccs/workloads_all.sql
+server url is localhost, port is 52047
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: ccs
+dataset: chembl, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/chembl/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/chembl/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/chembl/workloads_all.sql
+server url is localhost, port is 44667
+0 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 44667, "url": "localhost", "tid": "139845807547584"} pilotscope*/ /* (activities chem_act, compound_records chem_cr, assay2target chem_a2t) */ SELECT COUNT(*) FROM activities chem_act, compound_records chem_cr, assay2target chem_a2t WHERE (chem_act.doc_id = chem_cr.doc_id) AND (chem_act.assay_id >= 253122) AND (chem_act.molregno >= 296125) AND (chem_act.standard_flag = 0) AND (chem_a2t.tid < 53165) AND (chem_a2t.multi = 0) AND (chem_a2t.relationship_type = 'H');]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: consumer, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/consumer/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/consumer/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/consumer/workloads_all.sql
+server url is localhost, port is 35657
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: consumer
+dataset: credit, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/credit/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/credit/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/credit/workloads_all.sql
+server url is localhost, port is 43223
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: credit
+dataset: employee, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/employee/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/employee/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/employee/workloads_all.sql
+server url is localhost, port is 37709
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: employee
+dataset: financial, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/financial/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/financial/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/financial/workloads_all.sql
+server url is localhost, port is 58559
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: financial
+dataset: fnhk, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/fnhk/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/fnhk/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/fnhk/workloads_all.sql
+server url is localhost, port is 53873
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: fnhk
+dataset: grants, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/grants/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/grants/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/grants/workloads_all.sql
+server url is localhost, port is 44813
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: grants
+dataset: hepatitis, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/hepatitis/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/hepatitis/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/hepatitis/workloads_all.sql
+server url is localhost, port is 51787
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: hepatitis
+dataset: hockey, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/hockey/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/hockey/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/hockey/workloads_all.sql
+server url is localhost, port is 60905
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: hockey
+dataset: legalacts, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/legalacts/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/legalacts/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/legalacts/workloads_all.sql
+server url is localhost, port is 40415
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: legalacts
+dataset: movielens, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/movielens/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/movielens/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/movielens/workloads_all.sql
+server url is localhost, port is 39939
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 39939, "url": "localhost", "tid": "139807931540672"} pilotscope*/ /* (movies ml_mv, u2base ml_u2b, directors ml_drt, users ml_usr, actors ml_atr) */ SELECT COUNT(*) FROM movies ml_mv, u2base ml_u2b, directors ml_drt, users ml_usr, actors ml_atr WHERE (ml_mv.movieid = ml_u2b.movieid) AND (ml_u2b.userid = ml_usr.userid) AND (ml_mv.country = 'other') AND (ml_mv.year = 4) AND (ml_u2b.rating = '3') AND (ml_drt.d_quality = 4) AND (ml_usr.occupation = '1') AND (ml_usr.u_gender = 'M') AND (ml_atr.a_gender = 'M');]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: sakila, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/sakila/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/sakila/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/sakila/workloads_all.sql
+server url is localhost, port is 40825
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: sakila
+dataset: sap, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/sap/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/sap/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/sap/workloads_all.sql
+server url is localhost, port is 36131
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: sap
+dataset: seznam, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/seznam/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/seznam/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/seznam/workloads_all.sql
+server url is localhost, port is 40745
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: seznam
+dataset: ssb, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/ssb/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/ssb/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/ssb/workloads_all.sql
+server url is localhost, port is 43887
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: ssb
+dataset: talkingdata, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/talkingdata/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/talkingdata/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/talkingdata/workloads_all.sql
+server url is localhost, port is 42187
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: talkingdata
+dataset: telstra, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/telstra/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/telstra/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/telstra/workloads_all.sql
+server url is localhost, port is 38867
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: telstra
+dataset: tournament, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/tournament/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/tournament/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/tournament/workloads_all.sql
+server url is localhost, port is 58311
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 58311, "url": "localhost", "tid": "140072055162048"} pilotscope*/ /* (regular_season_detailed_results tnm_rsdr, tourney_seeds tnm_tse, tourney_compact_results tnm_tcr, regular_season_compact_results tnm_rscr) */ SELECT COUNT(*) FROM regular_season_detailed_results tnm_rsdr, tourney_seeds tnm_tse, tourney_compact_results tnm_tcr, regular_season_compact_results tnm_rscr WHERE (tnm_rsdr.wteam = tnm_tse.team) AND (tnm_rsdr.wteam = tnm_tcr.wteam) AND (tnm_rsdr.season = tnm_rscr.season);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: tpc_h, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/tpc_h/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/tpc_h/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/tpc_h/workloads_all.sql
+server url is localhost, port is 34423
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+PilotScope:(psycopg2.errors.QueryCanceled) canceling statement due to statement timeout
+
+[SQL: /*pilotscope {"anchor": {"RECORD_PULL_ANCHOR": {"enable": true, "name": "RECORD_PULL_ANCHOR"}}, "enableTerminate": false, "enableReceiveData": false, "port": 34423, "url": "localhost", "tid": "140524797592768"} pilotscope*/ /* (lineitem tpch_li, supplier tpch_s, partsupp tpch_ps, customer tpch_c) */ SELECT COUNT(*) FROM lineitem tpch_li, supplier tpch_s, partsupp tpch_ps, customer tpch_c WHERE (tpch_li.l_suppkey = tpch_s.s_suppkey) AND (tpch_li.l_partkey = tpch_ps.ps_partkey) AND (tpch_s.s_nationkey = tpch_c.c_nationkey);]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/home/user/oblab/PRICE/benchmark/subquery_all.py", line 62, in <module>
+    subquery_true_card = int(res.records.values[0][0])
+AttributeError: 'NoneType' object has no attribute 'records'
+dataset: tubepricing, workload_in_path: /home/user/oblab/PRICE/datas/workloads/pretrain/tubepricing/workloads_3000.sql, workload_out_path: /home/user/oblab/PRICE/datas/workloads/test/tubepricing/workloads.sql, workload_all_out_path: /home/user/oblab/PRICE/datas/workloads/test/tubepricing/workloads_all.sql
+server url is localhost, port is 32915
+0 sqls has been processed
+100 sqls has been processed
+200 sqls has been processed
+300 sqls has been processed
+400 sqls has been processed
+500 sqls has been processed
+600 sqls has been processed
+700 sqls has been processed
+800 sqls has been processed
+900 sqls has been processed
+1000 sqls has been processed
+1100 sqls has been processed
+1200 sqls has been processed
+1300 sqls has been processed
+1400 sqls has been processed
+1500 sqls has been processed
+1600 sqls has been processed
+1700 sqls has been processed
+1800 sqls has been processed
+1900 sqls has been processed
+2000 sqls has been processed
+2100 sqls has been processed
+2200 sqls has been processed
+2300 sqls has been processed
+2400 sqls has been processed
+2500 sqls has been processed
+2600 sqls has been processed
+2700 sqls has been processed
+2800 sqls has been processed
+2900 sqls has been processed
+dataset: tubepricing
