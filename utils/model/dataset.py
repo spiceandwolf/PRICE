@@ -28,7 +28,8 @@ def load_dataset_features(bin_size, dataset_list, train_or_test, usage):
     test_list_lens = [0 for _ in range(len(dataset_list))] if train_or_test == 'test' else None
 
     for dataset in dataset_list:
-        path = f"{current_dir}/../../setup/features/{usage}/{dataset}/features{bin_size}.pkl"
+        # path = f"{current_dir}/../../setup/features/{usage}/{dataset}/features{bin_size}.pkl"
+        path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{dataset}/features{bin_size}.pkl'
         print(f"using {dataset} path: {path}")
 
         with open(path, 'rb') as file:
@@ -84,3 +85,4 @@ def make_train_feature_dataloaders(train_dataset, train_batch_size):
 
 def make_test_feature_dataloaders(test_datasets_list, test_list_lens):
     return [DataLoader(test_dataset, batch_size=test_list_lens[i], shuffle=False) for i, test_dataset in enumerate(test_datasets_list)]
+    # return [DataLoader(test_dataset, batch_size=1024, shuffle=False) for i, test_dataset in enumerate(test_datasets_list)]

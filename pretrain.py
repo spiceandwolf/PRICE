@@ -88,6 +88,6 @@ for epoch in range(args.epochs):
     print('train q-error: 30%:', q_error[0], '  50%:', q_error[1], '  80%:', q_error[2], '  90%:', q_error[3], '  95%:', q_error[4], '  99%:', q_error[5])
 
 print('done!')
-torch.save(model.state_dict(), f'results/test_pretrain_params.pth')
-print('model saved in results/test_pretrain_params.pth')
+torch.save(model.state_dict(), f'results/baseball_pretrain_params.pth')
+print('model saved in results/baseball_pretrain_params.pth')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

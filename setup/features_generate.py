@@ -48,14 +48,14 @@ def create_workloads_features(filename, database, bin_size, usage, n_sqls=0):
         # """
         # TODO: control the number of sqls to be loaded 
         # """
-        if count > n_sqls:
+        # if count > n_sqls:
             
-            workload_out_path = filename.strip().rsplit('.', 1)[0] + f'_{n_sqls}.sql'
-            print(f'create {database} subquery in {workload_out_path}')
-            with open(workload_out_path, "w") as f:
-                for sql in lines[:n_sqls]:
-                    f.write(sql.strip() + "\n")
-            break
+        #     workload_out_path = filename.strip().rsplit('.', 1)[0] + f'_{n_sqls}.sql'
+        #     print(f'create {database} subquery in {workload_out_path}')
+        #     with open(workload_out_path, "w") as f:
+        #         for sql in lines[:n_sqls]:
+        #             f.write(sql.strip() + "\n")
+        #     break
 
         spilt_infos = line.split("||")
         sql, true_card, pg_est_card = spilt_infos[0], spilt_infos[1], spilt_infos[2]
@@ -154,7 +154,8 @@ if __name__ == '__main__':
     if little_testset:    
         n_sqls = args.n_sql_test
     
-    path = f'{current_dir}/../datas/workloads/{usage}/{db}/workloads.sql'
+    # path = f'{current_dir}/../datas/workloads/{usage}/{db}/workloads.sql'
+    path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{db}/workloads_subqueries.sql'
     
     starttime = datetime.datetime.now()
     if reweight == False and little_testset == False:
@@ -167,8 +168,8 @@ if __name__ == '__main__':
     
     data = {"data_features": data_features, "true_cards": true_cards, "pg_est_cards": pg_est_cards,
             "n_join_cols": n_join_cols, "n_fanouts": n_fanouts, "n_tables": n_tables, "n_filter_cols": n_filter_cols}    
-    data_path = f'{current_dir}/features/{usage}/{db}/features{bin_size}.pkl'
-
+    # data_path = f'{current_dir}/features/{usage}/{db}/features{bin_size}.pkl'
+    data_path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{db}/features{bin_size}.pkl'
     if not os.path.exists(os.path.dirname(data_path)):
         os.makedirs(os.path.dirname(data_path))
     with open(data_path, 'wb') as file:
