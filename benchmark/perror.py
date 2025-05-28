@@ -86,7 +86,7 @@ if __name__ == '__main__':
     # test_set_db = f"imdb"
     # test_set_db = f"stats"
     # test_set_db = f"ergastf1"
-    test_set_db = f"{args.dataset_name}"
+    test_set_db = f"genome"
     print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print(f"test_set_db: {test_set_db}, test_set_filename: {test_set_filename}")
 

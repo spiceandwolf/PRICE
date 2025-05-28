@@ -20,9 +20,9 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
-# TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']'accidents', 'consumer', 'fnhk',  'accidents', 'carcinogenesis', 'consumer', 'hockey', 'talkingdata'
+# TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']'accidents', 'carcinogenesis', 'consumer', 'hockey', 'ssb', 'talkingdata'
 # TEST_LIST = ['accidents', 'airline', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer', 'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens', 'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
-TEST_LIST = ['ssb',] 
+TEST_LIST = ['talkingdata',] 
 
 args = get_args()
 print(args)
@@ -59,7 +59,7 @@ model.register_buffer('update_counter', torch.tensor(1))
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/baseball_pretrain_params.pth'
+model_path = f'{current_dir}/results/baseball_pretrain_params_wf.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 
@@ -95,10 +95,8 @@ for idx, current_dataloader in enumerate(test_loaders_list):
 
     # to generate p-error input file
     output1 = output[0].detach().cpu().numpy()
-    # workloads_test_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_test.sql'
-    # workloads_all_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_test_all.sql'
-    workloads_test_file_path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{TEST_LIST[idx]}/workloads_subqueries.sql'
-    workloads_all_file_path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{TEST_LIST[idx]}/workloads_subqueries_all.sql'
+    workloads_test_file_path = f'{current_dir}/datas/workloads_v0_corrected/test/{TEST_LIST[idx]}/workloads_subqueries.sql'
+    workloads_all_file_path = f'{current_dir}/datas/workloads_v0_corrected/test/{TEST_LIST[idx]}/workloads_subqueries_all.sql'
     out_path = f'{current_dir}/results/{TEST_LIST[idx]}_perror_input.sql'
     generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
 

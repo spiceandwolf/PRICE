@@ -32,6 +32,7 @@ train_data, train_labels, train_pg_est_cards, \
 train_n_join_cols, train_n_fanouts, train_n_tables, train_n_filter_cols = load_dataset_features(bin_size=args.bin_size, dataset_list=TRAIN_LIST, train_or_test='train', usage='pretrain')
 
 max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = max(train_n_join_cols), max(train_n_fanouts), max(train_n_tables), max(train_n_filter_cols)
+# max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = 12, 12, 7, 10
 train_data, train_padding_masks = features_padding(args.bin_size, args.table_dim, args.filter_dim,
                                                    train_data, train_n_join_cols, train_n_fanouts, train_n_tables, train_n_filter_cols,
                                                    max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col)
@@ -88,6 +89,6 @@ for epoch in range(args.epochs):
     print('train q-error: 30%:', q_error[0], '  50%:', q_error[1], '  80%:', q_error[2], '  90%:', q_error[3], '  95%:', q_error[4], '  99%:', q_error[5])
 
 print('done!')
-torch.save(model.state_dict(), f'results/baseball_pretrain_params.pth')
-print('model saved in results/baseball_pretrain_params.pth')
+torch.save(model.state_dict(), f'results/doremi_new_pretrain_params.pth')
+print('model saved in results/doremi_new_pretrain_params.pth')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

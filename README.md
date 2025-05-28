@@ -1,10 +1,11 @@
-# PRICE: A Pretrained Model for Cross-Database Cardinality Estimation
+# Optimize Cardinality Estimation Model Pretraining by Simplifying the Training Datasets
 
-Cardinality estimation (CardEst) plays a crucial role in the optimization of query execution plans. Over the past decade, a number of methods have been proposed to address this issue, but limitations such as the inability to transfer across different databases have hindered their widespread deployment. 
+This is the code of our paper: **Optimize Cardinality Estimation Model Pretraining by Simplifying the Training Datasets**
 
-In response, we present **PRICE**, a <u>PR</u>etrained mult<u>I</u>-table <u>C</u>ard<u>E</u>st model designed to overcome these limitations. PRICE leverages low-level and transferable features, as well as self-attention models, to learn meta-knowledge for computing cardinality in any database. It is generally applicable to any unseen new database to attain high estimation accuracy, while its preparation cost is as little as the basic one-dimensional histogram-based CardEst methods.
+If you have any questions about our methodology or this repository, please contact us.
 
-This repository includes the implementation for **PRICE** and the procedures for evaluation, pretraining, and finetuning. If you have any questions about our methodology or this repository, please contact us.
+## GenAI Usage Disclosure
+In this paper, GenAI software tools are utilized for text translation, linguistic refinement, and code debugging. The GenAIs we used are deepseek and Doubao.
 
 ## Code Structure
 
@@ -13,12 +14,21 @@ The project directory structure is organized as follows:
 ```powershell
 .
 ├── benchmark
+├── config
 ├── datas
 │   ├── statistics
 │   │   ├── finetune
 │   │   ├── pretrain
 │   │   └── test
-│   └── workloads
+│   ├── workloads
+│   │   ├── finetune
+│   │   ├── pretrain
+│   │   └── test
+│   ├── workloads_v0
+│   │   ├── finetune
+│   │   ├── pretrain
+│   │   └── test
+│   └── workloads_v0_corrected
 │       ├── finetune
 │       ├── pretrain
 │       └── test
@@ -34,67 +44,151 @@ The project directory structure is organized as follows:
 
 ### Environment
 
-python 3.10.13, pytorch 2.1.0, numpy 1.26.1, pandas 2.1.3, sqlglot 18.17.0
+The environment can be set up using a shell command as follow:
+```shell
+conda env create -f environment.yml
+```
 
 ### Evaluation Tools
 
-We utilize [Pilotscope](https://github.com/alibaba/pilotscope) to generate subqueries, calculate p-error, and evaluate end-to-end time. Refer to the [documentation](https://woodybryant.github.io/PilotScopeDoc.io/) for installation instructions and usage guidelines. Additional details about evaluation codes can be found in the `benchmark/` directory.
+We use [Pilotscope](https://github.com/alibaba/pilotscope) to calculate p-error, and evaluate end-to-end time. Installation instructions are in the [documentation](https://woodybryant.github.io/PilotScopeDoc.io/).
 
-## Setup
+## Configuration
 
-### Datasets
+**Step 1:**
 
-The datasets utilized for model evaluation, pretraining, and finetuning are expected to be stored in the `datas/datasets` directory. Example datasets (30 datasets in total) are provided in the [data repository](https://drive.google.com/file/d/1-sSihVzjgrFbO_LoiwbjI2sVOPxO7N2G/view?usp=sharing), and the storage space required for these datasets is approximately **17GB**.
+Since our experiment is based on PRICE, please refer to [PRICE](https://github.com/StCarmen/PRICE.git) project for data downloading and preprocessing procedures.
 
-### Statistics
+There are three workload-related directories under the `datas/` path:
+    - `datas/workloads/`: The path for currently used workloads in [PRICE](https://github.com/StCarmen/PRICE.git) project(after 2025/05/01).
+    - `datas/workloads_v0/`: The path for previously used workloads in [PRICE](https://github.com/StCarmen/PRICE.git) project(before 2025/05/01). SQLs in this directory have some mistakes aboat true cardinalities in each sql file. These sql files can get from `datas/workloads/` in [url](https://github.com/StCarmen/PRICE/tree/603f91bdd541d60025b414c3994d0af2d0c93fb9#)
+    - `datas/workloads_v0_corrected/`: The path for some workloads which have been corrected in `datas/workloads_v0/`. These workloads are *accidents*, *baseball*, *carcinogenesis*, *consumer*, *hockey*, *ssb* and *talkingdata*.
 
-Statistics should be generated for datasets and placed in the `datas/statistics` directory. Please note that database statistics have already been provided in the `datas/statistics` directory for the datasets accessible in the <u>data repository</u>. If you have your own datasets within the `datas/datasets` directory, it is necessary to generate statistics for them. Further information regarding this process can be found in [utils/statistics/README.md](./utils/statistics/README.md).
+**Step 2:**
 
-### Features
+The file `datas/baseline_domain_weights.json` contains the initial weight mappings for all training datasets. Ensure this file is properly configured prior to training. 
+The file `results/model_params.pth` is used as the reference model. 
+The hyperparameter configurations are defined within the `utils/model/args.py` file.
 
-Once statistics are available, features are generated for model training and execution. A bash command is provided for generating features for the datasets in the <u>data repository</u>:
+We first show the commands of quantifying domain-specific contributions in training data in our paper. 
 
 ```shell
-sh setup/generate.sh
+python doremi_pretrain.py --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 1500 --lr 1e-5
 ```
 
-This script will require a period of time to complete, and logs will be accessible in `setup/features_log`. The resulting features will be stored in `setup/features` and will occupy approximately **7GB** of disk space. If you intend to generate features for your own datasets, please modify the script accordingly.
+Then, this command's output is under the  `configs/` path. 
+    - `configs/doremi_pretrain_params.json` is the file corresponds to the content of *Table 3 in Appendix A* of the paper. This file contains the quantified weights among datasets in the `datas/workloads/` path.
+    - `configs/doremi_pretrain_params_v0.json` contains the quantified weights among datasets in the `datas/workloads_v0/` path.
+
+**Step 3:**
+
+Features for [PRICE](https://github.com/StCarmen/PRICE.git) training are regenerated by sampling from the training data according to the weights specified in the file `configs/doremi_pretrain_params.json`.
+
+A bash command is provided for this purpose:
+
+```shell
+sh setup/regenerate.sh
+```
+
+Then we proceed to retrain the PRICE model using the newly generated features:
+```shell
+python pretrain.py --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 1500 --lr 2.85e-5
+```
+
+The *Simple PRICE* in our paper is  `results/doremi_new_pretrain_params.pth`.
+
+The *Baseball PRICE* in our paper is  `results/baseball_pretrain_params_wf.pth`. It is the pretrained model utilized both *baseball* workloads in `datas/workloads_v0/` and `datas/workloads_v0_corrected/`.
 
 ## Evaluation
 
-We provide our pretrained model, which was pretrained on 26 datasets (the same as the paper states), in the `results/model_params.pth` file. To evaluate the estimation accuracy of the pretrained model on unseen datasets (e.g., IMDB, STATS, ErgastF1, VisualGenome), run the following command:
+To evaluate the estimation accuracy of the pretrained model on unseen datasets (e.g., IMDB, STATS, ErgastF1, VisualGenome), run the following command:
 
 ```shell
 python evaluate.py
 ```
 
-During the evaluation process, certain metrics related to estimation accuracy (e.g., q-error) will be displayed.
+During the evaluation process, certain metrics related to estimation accuracy (e.g., q-error) will be displayed. For example, *Simple PRICE*'s Q-error:
 
 ```shell
-imdb loss: 1.6293717622756958
-imdb q-error: 30%: 1.3949   50%: 1.7771   80%: 4.0716   90%: 8.3952   95%: 15.4516   99%: 70.8889
-stats loss: 2.834393262863159
-stats q-error: 30%: 1.3827   50%: 1.8709   80%: 5.4934   90%: 12.4606   95%: 35.5513   99%: 579.6716
-ergastf1 loss: 1.3214871883392334
-ergastf1 q-error: 30%: 1.2311   50%: 1.4315   80%: 3.1244   90%: 6.4412   95%: 14.3196   99%: 67.9744
-genome loss: 1.5354844331741333
-genome q-error: 30%: 1.3125   50%: 1.6545   80%: 3.5951   90%: 5.1724   95%: 15.6697   99%: 114.4227
+imdb loss: 1.1657719612121582
+imdb q-error: 30%: 1.3221   50%: 1.6579   80%: 3.3948   90%: 5.3248   95%: 8.4837   99%: 47.2758
+stats loss: 3.482184886932373
+stats q-error: 30%: 1.4921   50%: 2.1337   80%: 5.6806   90%: 14.0866   95%: 41.8693   99%: 1923.8892
+ergastf1 loss: 1.358346700668335
+ergastf1 q-error: 30%: 1.2875   50%: 1.5982   80%: 3.5952   90%: 7.3137   95%: 13.801   99%: 37.823
+genome loss: 2.4879724979400635
+genome q-error: 30%: 1.4074   50%: 2.173   80%: 6.3593   90%: 7.5092   95%: 30.0471   99%: 143.1136
 ```
 
-## Pretraining
-
-We also offer the option to pretrain the model from scratch. Below, we provide a list of recommended parameters for pretraining, which necessitates a minimum of **160GB** of GPU memory:
+To evaluate the estimation accuracy of *Baseball PRICE* on the each of datasets (*accidents*, *carcinogenesis*, *consumer*, *hockey*, *ssb* and *talkingdata*), use the following command:
 
 ```shell
-python pretrain.py --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 15000 --lr 2.85e-5
+python evaluate_doremi.py
 ```
 
-## Finetuning
+These commands' outputs are `results/{dataset}_perror_input.sql`. We use `benchmark/perror.py` and `benchmark/e2e.py` to get p-error and end-to-end time.
 
-We provide code for finetuning our pretrained model based on specific datasets as well. Examples of finetuning on datasets such as IMDB, STATS, ErgastF1, and VisualGenome are given. Below is an example:
+The original data of Table 2 and Figure 1 in our paper.
+
+
+qerror:
+```shell
+    accidents:
+        pg: 30%: 11.6877   50%: 80.8574   80%: 3636.2562   90%: 32657.1712   95%: 254496.8906   99%: 6783716.8679   100%: 1189763968.5
+        mscn: Median: 2.3792315881157458 90th percentile: 12.859676438015885 95th percentile: 28.762032085561497 99th percentile: 137.4044000000001 Max: 172.55992923485184 Mean: 8.252724357473419  
+        ours: 30%: 2.6628   50%: 4.0229   80%: 10.3132   90%: 33.64   95%: 62.0322   99%: 90.5945   100%: 265.5589
+    carcinogenesis:
+        pg: 30%: 5.8737   50%: 22.3343   80%: 339.945   90%: 1558.0285   95%: 5615.8893   99%: 65075.375   100%: 26386426.5
+        mscn: Median: 1.2770794966236956 90th percentile: 4.764867761652328 95th percentile: 38.28659858394534 99th percentile: 44.46534653465346 Max: 1636.264913803795 Mean: 5.382034163737616 
+        ours: 30%: 1.4077   50%: 2.0333   80%: 4.6817   90%: 7.8963   95%: 11.5834   99%: 23.7657   100%: 116.7644
+    consumer:
+        pg: 30%: 5.8717   50%: 23.6985   80%: 367.9431   90%: 1588.2643   95%: 5224.7386   99%: 30831.945   100%: 436069.6429
+        mscn: Median: 1.1932463872615129 90th percentile: 2.047357634985432 95th percentile: 2.807815870931432 99th percentile: 17.80240688878755 Max: 34.45711264963678 Mean: 1.7951921215770403 
+        qspn: Median: 1.92 90th percentile: 9810.0 95th percentile: 64798.0 99th percentile: 2622174.0 Max: 2637794.0 Mean: 58875.79
+        ours: 30%: 1.6518   50%: 1.9396   80%: 2.7708   90%: 3.5775   95%: 5.2298   99%: 33.1506   100%: 104.2008
+    hockey:
+        pg: 30%: 4.9   50%: 16.2895   80%: 188.6522   90%: 830.7002   95%: 2730.3005   99%: 27839.7776   100%: 1680091.375
+        mscn: Median: 1.9950641563819709 90th percentile: 8.824060869515415 95th percentile: 12.36 99th percentile: 35.61010909961702 Max: 361.2857142857143 Mean: 4.187611906704775 
+        ours: 30%: 1.6907   50%: 2.2476   80%: 3.8698   90%: 5.6645   95%: 8.6364   99%: 43.6009   100%: 219.1962
+    ssb:
+        pg: 30%: 5.2881   50%: 19.0755   80%: 310.9212   90%: 1655.4175   95%: 6304.4467   99%: 76833.8529   100%: 1999667.5
+        mscn: Median: 1.2211637794907775 90th percentile: 2.1613969765103067 95th percentile: 2.6103419811320747 99th percentile: 6.481956552205302 Max: 10.175879396984925 Mean: 1.51925219725254 
+        neurocard: median 1.0455720326457405 95th 1.8536584386684134 99th 9.466131970043968 max 15.217469879518072
+        ours: 30%: 1.6288   50%: 2.032   80%: 2.901   90%: 3.7066   95%: 4.6173   99%: 10.0226   100%: 21.3001
+    talkingdata:
+        pg: 30%: 17.3133   50%: 137.6275   80%: 9978.9184   90%: 103797.1359   95%: 727204.7745   99%: 21870220.5552   100%: 11700462592.5
+        mscn: Median: 2.0079948141745896 90th percentile: 11.63364413364413 95th percentile: 23.451775174370866 99th percentile: 160.43436325521148 Max: 27338.835373075406 Mean: 40.96490352533517 
+        ours: 30%: 1.7972   50%: 3.3152   80%: 19.2946   90%: 84.5999   95%: 240.6421   99%: 1436.9537   100%: 7006.1535
+```
+
+Experiments on each dataset are repeated 5 times, and the final result is the average of these 5 repetitions.
 
 ```shell
-python finetune.py --dataset genome --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 15000 --lr 1e-5
+e2e times: 
+    accidents:
+        optimal: 393.93 | 394.76 | 395.04 | 395.67 | 395.68 
+        mscn: 408.52 | 407.22 | 407.67 | 407.81 | 409.07 
+        ours: 409.92 | 410.96 | 410.37 | 410.34 | 411.89
+    carcinogenesis:
+        optimal: 33.30 | 34.18 | 34.38 | 33.35 | 33.43
+        mscn: 35.25 | 35.80 | 35.92 | 35.34 | 35.55
+        ours: 34.24 | 34.09 | 34.59 | 34.11 | 34.13
+    consumer:
+        optimal: 33.74 | 34.34 | 34.30 | 34.68 | 35.42
+        mscn: 34.11 | 34.53 | 35.44 | 34.74 | 34.66
+        ours: 35.74 | 35.27 | 34.97 | 35.33 | 35.05
+        qspn: 37.4352 | 36.8304 | 37.078 | 37.0313 | 36.6994
+    hockey:
+        optimal: 2.75 | 3.08 | 2.60 | 3.01 | 2.61
+        mscn: 3.16 | 3.65 | 3.18 | 3.32 | 3.11
+        ours: 2.95 | 2.91 | 2.88 | 3.07 | 2.62
+    ssb:
+        optimal: 108.9652 | 108.9182 | 108.9867 | 109.2484 | 109.0196
+        mscn: 129.30 | 129.15 | 129.91 | 130.16 | 129.97
+        ours: 131.60 | 131.97 | 132.16 | 131.64 | 132.13
+        neurocard: 107.6076 | 108.3027 | 108.0316 | 107.7736 | 108.1997
+    talkingdata:
+        optimal: 389.34 | 391.05 | 392.52 | 391.83 | 391.49
+        mscn: 409.89 | 410.37 | 411.34 | 410.34 | 411.53
+        ours: 395.08 | 394.40 | 393.42 | 393.54 | 397.37
 ```
-
-You can finetune the pretrained model with preferred parameters on your specific finetune datasets. It is important to note that features of the finetune datasets need to be available in the `setup/features` directory. For more details, please refer to the **Setup** section.

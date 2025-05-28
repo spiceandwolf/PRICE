@@ -28,8 +28,9 @@ def load_dataset_features(bin_size, dataset_list, train_or_test, usage):
     test_list_lens = [0 for _ in range(len(dataset_list))] if train_or_test == 'test' else None
 
     for dataset in dataset_list:
-        # path = f"{current_dir}/../../setup/features/{usage}/{dataset}/features{bin_size}.pkl"
-        path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{dataset}/features{bin_size}.pkl'
+        path = f"{current_dir}/../../setup/features/{usage}/{dataset}/features{bin_size}.pkl"
+        # path = f'/home/user/oblab/CE-baselines/test_dataset_training/price/doremi/{dataset}/features{bin_size}.pkl'
+        # path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{dataset}/test/features{bin_size}.pkl'
         print(f"using {dataset} path: {path}")
 
         with open(path, 'rb') as file:

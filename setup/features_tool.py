@@ -67,6 +67,7 @@ class Sql2Feature():
         for eq in paresd_sql.args["where"].find_all(sqlglot.exp.EQ):
             if isinstance(eq.args["expression"], sqlglot.exp.Column):
                 joins.append(str(eq))
+        joins = list(set(joins))
         return columns, tables, joins, ref_to_tables
     
     def get_summary_location(self, sql, column):

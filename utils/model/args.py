@@ -27,7 +27,8 @@ def get_args():
     TODO:
     add some args
     '''
-    arg_parser.add_argument('--domain_config_path', type=str, default='./datas/baseline_domain_weights.json', help='')
+    # arg_parser.add_argument('--domain_config_path', type=str, default='./datas/baseline_domain_weights.json', help='')
+    arg_parser.add_argument('--domain_config_path', type=str, default='./configs/doremi_pretrain_params.json', help='')
     arg_parser.add_argument('--output_dir', type=str, default='./results', help='')
     arg_parser.add_argument('--reweight_eta', type=float, default=1.0, help='')
     arg_parser.add_argument('--reweight_eps', type=float, default=1e-4, help='')
