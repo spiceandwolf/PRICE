@@ -164,7 +164,7 @@ datas/datasets.tar.gz
 datas/statistics/*/*/gen_*
 datas/workloads/*/*/workloads*
 results/
-!results/baseball*
-!results/doremi*
-!results/avg_domian_weight*
+!results/baseball*.pth
+!results/doremi*.pth
+!results/avg_domain_weights*.json
 setup/features*/
