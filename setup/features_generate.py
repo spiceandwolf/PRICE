@@ -40,11 +40,6 @@ def create_workloads_features(filename, database, bin_size, usage, weight=1.0):
     count = 0
     total_time = 0
     
-    n_features = max(int(weight * len(lines)), 1)
-    import random
-    # random.seed(42)
-    # lines = random.sample(lines, n_features)
-    
     for line in lines:
         
         count = count + 1
@@ -120,6 +115,7 @@ if __name__ == '__main__':
         data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = create_workloads_features(path, database=db, bin_size=bin_size, usage=usage, weight=weight)
     endtime = datetime.datetime.now()
     print(f"create dataset time: {(endtime - starttime).seconds}s")
+    print(f'n_join_cols: {max(n_join_cols)}, n_fanouts: {max(n_fanouts)}, n_tables: {max(n_tables)}, n_filter_cols: {max(n_filter_cols)}')
     
     data = {"data_features": data_features, "true_cards": true_cards, "pg_est_cards": pg_est_cards,
             "n_join_cols": n_join_cols, "n_fanouts": n_fanouts, "n_tables": n_tables, "n_filter_cols": n_filter_cols}    

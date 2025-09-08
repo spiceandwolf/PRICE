@@ -16,14 +16,14 @@ do
     nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage pretrain > $BASEDIR/features_log/pretrain/${db}_${bin_size}.log 2>&1 &
 done
 
-unseen dataset to test
-for db in imdb stats ergastf1 genome
-do
-    nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage test > $BASEDIR/features_log/test/${db}_${bin_size}.log 2>&1 &
-done
+# unseen dataset to test
+# for db in imdb stats ergastf1 genome
+# do
+#     nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage test > $BASEDIR/features_log/test/${db}_${bin_size}.log 2>&1 &
+# done
 
 # finetune
-for db in imdb stats ergastf1 genome
-do
-    nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage finetune > $BASEDIR/features_log/finetune/${db}_${bin_size}.log 2>&1 &
-done
+# for db in imdb stats ergastf1 genome
+# do
+#     nohup python -u $BASEDIR/features_generate.py --db $db --bin_size $bin_size --usage finetune > $BASEDIR/features_log/finetune/${db}_${bin_size}.log 2>&1 &
+# done

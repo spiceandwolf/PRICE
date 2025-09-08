@@ -48,7 +48,7 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/doremi_new_pretrain_params.pth'
+model_path = f'{current_dir}/results/pretrain_params_old.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 
@@ -85,7 +85,7 @@ for idx, current_dataloader in enumerate(test_loaders_list):
     workloads_test_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads.sql'
     workloads_all_file_path = f'{current_dir}/datas/workloads/test/{TEST_LIST[idx]}/workloads_all.sql'
     out_path = f'{current_dir}/results/{TEST_LIST[idx]}_perror_input.sql'
-    generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
+    # generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
 
 print('done!')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
