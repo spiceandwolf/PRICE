@@ -22,7 +22,7 @@ torch.cuda.manual_seed_all(SEED)
 
 # TEST_LIST = ['imdb', 'stats', 'ergastf1', 'genome']'accidents', 'carcinogenesis', 'consumer', 'hockey', 'ssb', 'talkingdata'
 # TEST_LIST = ['accidents', 'airline', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer', 'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens', 'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
-TEST_LIST = ['talkingdata',] 
+TEST_LIST = ['hockey',] 
 
 args = get_args()
 print(args)
@@ -58,10 +58,11 @@ model.register_buffer('update_counter', torch.tensor(1))
 '''
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
+# model_path = f'{current_dir}/results/pretrain_params_baseball.pth'
 
-model_path = f'{current_dir}/results/baseball_pretrain_params_wf.pth'
+model_path = f'{current_dir}/results/baseball_pretrain_params_r2.pth'
 print(f"load model from {model_path}")
-model.load_state_dict(torch.load(model_path))
+model.load_state_dict(torch.load(model_path, map_location='cuda:0'))
 
 criterion = nn.MSELoss()
 
@@ -98,7 +99,7 @@ for idx, current_dataloader in enumerate(test_loaders_list):
     workloads_test_file_path = f'{current_dir}/datas/workloads_v0_corrected/test/{TEST_LIST[idx]}/workloads_subqueries.sql'
     workloads_all_file_path = f'{current_dir}/datas/workloads_v0_corrected/test/{TEST_LIST[idx]}/workloads_subqueries_all.sql'
     out_path = f'{current_dir}/results/{TEST_LIST[idx]}_perror_input.sql'
-    generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
+    # generate_perror_input(output1, out_path, workloads_test_file_path, workloads_all_file_path, True)
 
 print('done!')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

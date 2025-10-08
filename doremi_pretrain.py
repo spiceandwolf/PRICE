@@ -51,7 +51,7 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
                         hist_dim=args.bin_size, table_dim=args.table_dim, filter_dim=args.filter_dim,
                         query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                         n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
-# model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
+model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 
 '''
 TODO:
@@ -99,6 +99,8 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 criterion = nn.MSELoss(reduction='none')
 
+example_rankds = {domain_id: [] for domain_id in range(len(model.train_domain_weights))}
+
 for epoch in range(args.epochs):
     print('--'*30)
     model.train()
@@ -123,7 +125,6 @@ for epoch in range(args.epochs):
         '''
         TODO:
         '''
-        reference_model.train()
         with torch.no_grad():
             reference_output = reference_model(feature, pg_est_card, padding_mask, n_join_col, n_fanout, n_table, n_filter_col).view(1, -1)
         reference_pertoken_loss = criterion(reference_output, label) 
@@ -131,22 +132,25 @@ for epoch in range(args.epochs):
         excess_loss = pertoken_loss - reference_pertoken_loss
         
         scores = excess_loss.detach().view(-1, 1) 
-       
         
         # update domain weights
         wandb_log_dict = {}
         train_domain_weights = model.train_domain_weights.clone()
+        examples = torch.cat([n_join_col, n_fanout, n_table, n_filter_col, torch.clip(scores, min=0)], dim=1)
 
         perdomain_scores = []
         for domain_id in range(len(train_domain_weights)):
             domain_mask = (domain_ids == domain_id)
             
             if domain_mask.sum() > 0:
-                
                 curr_domain_scores = torch.clip(scores[domain_mask], min=0).mean()
             else:
                 curr_domain_scores = model.perdomain_scores[domain_id]
+                
             perdomain_scores.append(curr_domain_scores)
+            
+            example_rankds[domain_id].append(examples[domain_mask].cpu().detach().tolist()) 
+            
         model.perdomain_scores[:] = torch.tensor(perdomain_scores).float()
         log_new_train_domain_weights = torch.log(train_domain_weights) + args.reweight_eta * model.perdomain_scores
         log_new_train_domain_weights = log_new_train_domain_weights - torch.logsumexp(log_new_train_domain_weights, dim=0)
@@ -207,6 +211,11 @@ config_dict = {"train_domain_weights": avg_domain_weights_dict,
 config_dict_file = Path(__file__).parent / 'configs' / 'doremi_pretrain_params_r2.json'
 with open(config_dict_file, 'w') as f:
     json.dump(config_dict, f, indent=2)
+    
+# save example_rankds to json
+example_rankds_file = Path(args.output_dir) / 'example_rankds.json'
+with open(example_rankds_file, 'w') as f:
+    json.dump(example_rankds, f, indent=2)
 
 '''
 END

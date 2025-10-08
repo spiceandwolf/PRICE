@@ -105,7 +105,7 @@ if __name__ == '__main__':
         n_sqls = args.n_sql_test
     
     path = f'{current_dir}/../datas/workloads/{usage}/{db}/workloads.sql'
-    # path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{db}/workloads_subqueries.sql'
+    # path = f'/home/user/oblab/CE-baselines/test_dataset_training/workloads/{db}/workloads.sql'
     
     starttime = datetime.datetime.now()
     if reweight == False and little_testset == False:
