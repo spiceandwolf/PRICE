@@ -163,7 +163,6 @@ datas/datasets
 datas/datasets.tar.gz
 datas/statistics/*/*/gen_*
 datas/workloads/*/*/workloads*
-datas/*.pkl
 results/*
 !results/baseball*
 !results/doremi*
