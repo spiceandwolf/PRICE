@@ -1,6 +1,6 @@
-# Optimize Cardinality Estimation Model Pretraining by Simplifying the Training Datasets
+# Pretraining Cardinality Estimators on Less Datasets: Finding Special Databases when Training
 
-This is the code of our paper: **Optimize Cardinality Estimation Model Pretraining by Simplifying the Training Datasets**
+This is the code of our paper: **Pretraining Cardinality Estimators on Less Datasets: Finding Special Databases when Training**
 
 If you have any questions about our methodology or this repository, please contact us.
 
