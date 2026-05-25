@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+from torch.utils.checkpoint import checkpoint
 
 
 class Head(nn.Module):
@@ -109,12 +110,13 @@ class Block(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_dim, n_layers, n_heads, dropout_rate):
+    def __init__(self, input_dim, n_layers, n_heads, dropout_rate, use_checkpoint=True):
         super(Encoder, self).__init__()
         self.input_dim = input_dim
         self.n_layers = n_layers
         self.n_heads = n_heads
         self.dropout_rate = dropout_rate
+        self.use_checkpoint = use_checkpoint
 
         # Stack of blocks
         self.blocks = nn.ModuleList([
@@ -132,7 +134,10 @@ class Encoder(nn.Module):
         # Apply stacked blocks
         out = inputs
         for block in self.blocks:
-            out = block(out, padding_mask)
+            if self.use_checkpoint:
+                out = checkpoint(block, out, padding_mask, use_reentrant=False)
+            else:
+                out = block(out, padding_mask)
         # Apply layer normalization
         out = self.norm(out)
         # Linear projection

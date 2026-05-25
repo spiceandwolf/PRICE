@@ -15,7 +15,7 @@ def calc_percentile_list(l, percentile_list):
     return p_list
 
 
-def calc_test_set_p_error(test_set_filename, test_set_db, pg_or_model, db_host="localhost", db_user="postgres", db_user_pwd="postgres", db_port=5433):
+def calc_test_set_p_error(test_set_filename, test_set_db, pg_or_model, db_host="localhost", db_user="pilotscope", db_user_pwd="pilotscope", db_port=5433):
     """
     :param test_set_filename: the file path of test set (sql, true_card, model_est_card)
     :param test_set_db: the database of test set
@@ -79,14 +79,14 @@ if __name__ == '__main__':
     arg_parser.add_argument('--workload_out_path', type=str,)
     args = arg_parser.parse_args()
     
-    # test_set_filename = f"/home/user/oblab/PRICE/results/imdb_perror_input.sql"
+    test_set_filename = f"/home/user/oblab/PRICE/results/imdb_perror_input.sql"
     # test_set_filename = f"/home/user/oblab/PRICE/results/stats_perror_input.sql"
     # test_set_filename = f"/home/user/oblab/PRICE/results/ergastf1_perror_input.sql"
-    test_set_filename = f"/home/user/oblab/PRICE/results/genome_perror_input.sql"
-    # test_set_db = f"imdb"
+    # test_set_filename = f"/home/user/oblab/PRICE/results/genome_perror_input.sql"
+    test_set_db = f"imdb"
     # test_set_db = f"stats"
     # test_set_db = f"ergastf1"
-    test_set_db = f"genome"
+    # test_set_db = f"genome"
     print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print(f"test_set_db: {test_set_db}, test_set_filename: {test_set_filename}")
 

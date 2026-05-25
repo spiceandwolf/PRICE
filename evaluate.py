@@ -48,7 +48,7 @@ model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fanout, n_tabl
 # model = nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 # model = nn.DataParallel(model)
 
-model_path = f'{current_dir}/results/baseball_pretrain_params.pth'
+model_path = f'{current_dir}/results/baseball_old_simulated_pretrain_params.pth'
 print(f"load model from {model_path}")
 model.load_state_dict(torch.load(model_path))
 

@@ -8,7 +8,7 @@ class RegressionModel(nn.Module):
     def __init__(self, n_join_col, n_fanout, n_table, n_filter_col,
                  hist_dim, table_dim, filter_dim,
                  query_hidden_dim, final_hidden_dim, output_dim,
-                 n_embd, n_layers, n_heads, dropout_rate):
+                 n_embd, n_layers, n_heads, dropout_rate, use_checkpoint=True):
         super(RegressionModel, self).__init__()
         self.n_join_col, self.n_fanout, self.n_table, self.n_filter_col = n_join_col, n_fanout, n_table, n_filter_col
         print(f"n_features: {n_join_col + n_fanout + n_table + n_filter_col}!")
@@ -20,8 +20,8 @@ class RegressionModel(nn.Module):
         self.scale_embedding = ScaleEmbedding(n_join_col, n_fanout, hist_dim, n_embd)
         self.filter_embedding = FilterEmbedding(n_join_col, n_fanout, n_table, n_filter_col,
                                           hist_dim, table_dim, filter_dim, n_embd)
-        self.scale_encoder = Encoder(n_embd, n_layers, n_heads, dropout_rate)
-        self.filter_encoder = Encoder(n_embd, n_layers, n_heads, dropout_rate)
+        self.scale_encoder = Encoder(n_embd, n_layers, n_heads, dropout_rate, use_checkpoint)
+        self.filter_encoder = Encoder(n_embd, n_layers, n_heads, dropout_rate, use_checkpoint)
 
         self.len_net = nn.Linear(4, 16)
         self.linear = nn.Linear(n_embd + 16, query_hidden_dim)

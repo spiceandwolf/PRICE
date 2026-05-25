@@ -32,6 +32,9 @@ def get_args():
     arg_parser.add_argument('--output_dir', type=str, default='./results', help='')
     arg_parser.add_argument('--reweight_eta', type=float, default=1.0, help='')
     arg_parser.add_argument('--reweight_eps', type=float, default=1e-4, help='')
+    
+    arg_parser.add_argument('--gradient_checkpointing', action='store_true', default=True)
+    arg_parser.add_argument('--no_gradient_checkpointing', dest='gradient_checkpointing', action='store_false')
 
     args = arg_parser.parse_args()
     return args
