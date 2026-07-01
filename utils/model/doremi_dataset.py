@@ -82,7 +82,7 @@ def make_feature_datasets(data_features, labels, pg_est_cards, padding_masks,
             )
         # print(f"domain_id_to_idx: {domain_id_to_idx}")
         # print(f"cluster_id_to_local_dicts: {cluster_id_to_local_dicts}")    
-        
+        # 构建全局连续的簇索引
         global_cluster_idxs = []
         for did, cid in zip(domain_ids, cluster_ids):
             domain_idx = domain_id_to_idx[did]
@@ -113,9 +113,6 @@ def make_train_feature_dataloaders(train_dataset, train_batch_size):
 
 def make_test_feature_dataloaders(test_datasets_list, test_list_lens):
     return [DataLoader(test_dataset, batch_size=test_list_lens[i], shuffle=False) for i, test_dataset in enumerate(test_datasets_list)]
-
-def make_cluster_feature_dataloaders(train_dataset, train_batch_size):
-    return DataLoader(train_dataset, batch_size=train_batch_size, shuffle=False)
 
 def load_cluster_feature_data(cluster_ids, dataset_list, train_or_test, usage):
     assert train_or_test in ['train', 'test'], f"train_or_test should be 'train' or 'test', but got {train_or_test}"

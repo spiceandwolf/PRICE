@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model.simulated_module import ScaleEmbedding, FilterEmbedding, Encoder
+from simulate_price.simulated_module import ScaleEmbedding, FilterEmbedding, Encoder
 
 
 class RegressionModel(nn.Module):

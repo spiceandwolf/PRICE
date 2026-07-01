@@ -5,7 +5,7 @@ import datetime
 
 import torch
 
-from graph_features_tool import Sql2Feature
+from simulate_price.graph_features_tool import Sql2Feature
 import argparse
 
 

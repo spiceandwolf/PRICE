@@ -90,7 +90,10 @@ reference_model = RegressionModel(n_join_col=max_n_join_col, n_fanout=max_n_fano
                                     query_hidden_dim=args.query_hidden_dim, final_hidden_dim=args.final_hidden_dim, output_dim=args.output_dim,
                                     n_embd=args.n_embd, n_layers=args.n_layers, n_heads=args.n_heads, dropout_rate=args.dropout_rate).to(device)
 # 从 CPU 加载避免 GPU 临时分配导致 OOM
-reference_model.load_state_dict(torch.load(reference_model_path, map_location="cpu"))
+ckpt = torch.load(reference_model_path, map_location="cpu")
+from collections import OrderedDict
+new_ckpt = OrderedDict((k[7:] if k.startswith("module.") else k, v) for k, v in ckpt.items())
+reference_model.load_state_dict(new_ckpt)
 for param in reference_model.parameters():
     param.requires_grad = False
 
@@ -110,6 +113,7 @@ model.register_buffer('update_counter', torch.tensor(1))
 # ============================================================
 # DDP 包装（必须在 optimizer 创建之前）
 # ============================================================
+model.to(device)
 model = DDP(model, device_ids=[local_rank], find_unused_parameters=False)
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
@@ -188,7 +192,7 @@ for epoch in range(args.epochs):
         curr_cluster_weights = train_domain_cluster_weights[global_idx]
         normalizer = curr_cluster_weights.sum()
         normalizer = torch.clip(normalizer, min=1e-10)
-        
+        normalizer = normalizer / world_size
         # DDP: normalizer 跨 GPU 求和
         dist.all_reduce(normalizer, op=dist.ReduceOp.SUM)
 

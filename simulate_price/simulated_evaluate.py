@@ -5,9 +5,9 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-from model.simulated_encoder import RegressionModel
+from simulate_price.simulated_encoder import RegressionModel
 from utils.model.dataset import load_dataset_features, make_feature_datasets, make_test_feature_dataloaders
-from utils.model.simulated_padding import features_padding
+from simulate_price.simulated_padding import features_padding
 from utils.model.perror_input import generate_perror_input
 from utils.model.qerror import get_qerror, interval_qerror
 from utils.model.args import get_args

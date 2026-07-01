@@ -6,9 +6,9 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 
-from model.encoder import RegressionModel
+from simulate_price.simulated_encoder import RegressionModel
 from utils.model.dataset import load_dataset_features, make_feature_datasets, make_train_feature_dataloaders
-from utils.model.graph_padding import features_padding
+from simulate_price.simulated_padding import features_padding
 from utils.model.qerror import get_qerror
 from utils.model.args import get_args
 
@@ -20,10 +20,10 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
-TRAIN_LIST = ['accidents', 'airline', 'baseball', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer',
-              'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens',
-              'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
-# TRAIN_LIST = ['baseball']
+# TRAIN_LIST = ['accidents', 'airline', 'baseball', 'basketball', 'carcinogenesis', 'ccs', 'chembl', 'consumer',
+#               'credit', 'employee', 'financial', 'fnhk', 'grants', 'hepatitis', 'hockey', 'legalacts', 'movielens',
+#               'sakila', 'sap', 'seznam', 'ssb', 'talkingdata', 'telstra', 'tournament', 'tpc_h', 'tubepricing']
+TRAIN_LIST = ['baseball']
 args = get_args()
 print(args)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +32,7 @@ train_data, train_labels, train_pg_est_cards, \
 train_n_join_cols, train_n_fanouts, train_n_tables, train_n_filter_cols = load_dataset_features(bin_size=args.bin_size, dataset_list=TRAIN_LIST, train_or_test='train', usage='pretrain')
 
 max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = max(train_n_join_cols), max(train_n_fanouts), max(train_n_tables), max(train_n_filter_cols)
+# max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col = 12, 12, 7, 10
 train_data, train_padding_masks = features_padding(args.bin_size, args.table_dim, args.filter_dim,
                                                    train_data, train_n_join_cols, train_n_fanouts, train_n_tables, train_n_filter_cols,
                                                    max_n_join_col, max_n_fanout, max_n_table, max_n_filter_col)
@@ -88,6 +89,6 @@ for epoch in range(args.epochs):
     print('train q-error: 30%:', q_error[0], '  50%:', q_error[1], '  80%:', q_error[2], '  90%:', q_error[3], '  95%:', q_error[4], '  99%:', q_error[5])
 
 print('done!')
-torch.save(model.state_dict(), f'results/anti_baseball_pretrain_params.pth')
-print('model saved in results/anti_baseball_pretrain_params.pth')
+torch.save(model.state_dict(), f'results/baseball_old_simulated_pretrain_params.pth')
+print('model saved in results/baseball_old_simulated_pretrain_params.pth')
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

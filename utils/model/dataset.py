@@ -89,3 +89,574 @@ def make_train_feature_dataloaders(train_dataset, train_batch_size):
 def make_test_feature_dataloaders(test_datasets_list, test_list_lens):
     return [DataLoader(test_dataset, batch_size=test_list_lens[i], shuffle=False) for i, test_dataset in enumerate(test_datasets_list)]
     # return [DataLoader(test_dataset, batch_size=1024, shuffle=False) for i, test_dataset in enumerate(test_datasets_list)]
+
+
+def _truncated_proportional_allocation(proportions, cluster_sizes, total_desired):
+    """
+    Truncated redistribution method for proportional allocation without replacement.
+    
+    Iteratively assigns samples to clusters proportionally to their weights.
+    When a cluster's target exceeds its available data, it is capped at its actual
+    size and the excess slots are redistributed to the remaining uncapped clusters
+    proportionally. Uses largest-remainder method for the final fractional round.
+    
+    Args:
+        proportions: np.array of normalized weights (sum to 1), shape (K,)
+        cluster_sizes: list/array of available sample counts per cluster, shape (K,)
+        total_desired: total number of samples to allocate across all clusters
+    
+    Returns:
+        np.array of allocated sample counts per cluster (int), shape (K,)
+    """
+    import numpy as np
+    
+    n = len(proportions)
+    allocated = np.zeros(n, dtype=np.int64)
+    remaining_capacity = np.array(cluster_sizes, dtype=np.int64)
+    remaining_slots = int(total_desired)
+    
+    # Clusters with no capacity are excluded from the start
+    active = remaining_capacity > 0
+    
+    while True:
+        if remaining_slots <= 0 or not active.any():
+            break
+        
+        # Re-normalize proportions among still-active clusters
+        active_props = proportions.copy()
+        active_props[~active] = 0.0
+        prop_sum = active_props.sum()
+        if prop_sum <= 0:
+            break
+        active_props /= prop_sum
+        
+        # Ideal targets for this round
+        ideal = active_props * remaining_slots
+        
+        newly_exhausted = False
+        for i in range(n):
+            if not active[i]:
+                continue
+            target_i = int(np.floor(ideal[i]))
+            if target_i > remaining_capacity[i]:
+                # Capped by available data → allocate all remaining, mark exhausted
+                allocated[i] += int(remaining_capacity[i])
+                remaining_slots -= int(remaining_capacity[i])
+                remaining_capacity[i] = 0
+                active[i] = False
+                newly_exhausted = True
+            else:
+                allocated[i] += target_i
+                remaining_capacity[i] -= target_i
+                remaining_slots -= target_i
+        
+        if not newly_exhausted:
+            # No cluster was capped this round → distribute final slots by largest remainder
+            remainders = {}
+            for i in range(n):
+                if active[i] and remaining_capacity[i] > 0:
+                    remainders[i] = ideal[i] - np.floor(ideal[i])
+            sorted_clusters = sorted(remainders.keys(), key=lambda i: remainders[i], reverse=True)
+            for i in sorted_clusters:
+                if remaining_slots <= 0:
+                    break
+                if remaining_capacity[i] > 0:
+                    allocated[i] += 1
+                    remaining_capacity[i] -= 1
+                    remaining_slots -= 1
+            break
+    
+    return allocated
+
+
+def load_dataset_features_with_doremi_sampling(bin_size, dataset_list, train_or_test, usage, sample_ratio=None):
+    '''
+    Load dataset features and subsample according to DoReMi avg_domain_cluster_weights.
+    
+    For train data: randomly samples from each (domain, cluster) proportional to 
+    the learned cluster weights in ce_doremi.json. Clusters with expected sample 
+    count < 1 are skipped entirely.
+    For test data: loads normally without subsampling, identical to load_dataset_features.
+    
+    The cluster→weight mapping uses the same ordering as doremi_dataset.make_feature_datasets
+    (train mode): for each domain in dataset_list order, sorted unique cluster_ids.
+    
+    Total desired samples (total_desired) is determined by one of:
+    - If sample_ratio is given (e.g. 0.3): total_desired = total_available × sample_ratio
+    - If sample_ratio is None (default): auto-computed as
+        total_desired = per_dataset_len / max_domain_weight
+      where max_domain_weight = max over domains of sum(cluster weights in that domain).
+      This guarantees the most important domain receives at most per_dataset_len samples.
+    
+    Args:
+        bin_size, dataset_list, train_or_test, usage: same as load_dataset_features
+        sample_ratio: optional float in (0, 1]; if None, auto-compute from domain weights
+    
+    Returns:
+        Same format as load_dataset_features:
+        - train: (data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols)
+        - test:  above + test_list_lens
+    '''
+    # Load all data using the original function
+    if train_or_test == 'train':
+        data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = \
+            load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+    else:
+        return load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+    
+    # ---- DoReMi cluster-weighted random subsampling (train only) ----
+    import numpy as np
+    import json
+    from collections import defaultdict
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Load avg_domain_cluster_weights from DoReMi training config
+    config_path = os.path.join(current_dir, '../../configs/ce_doremi_eps0.002_min150.json')
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    avg_weights = np.array(config['avg_domain_cluster_weights'], dtype=np.float64)
+    
+    # Load clustering result (contains cluster assignment per data point)
+    cluster_path = os.path.join(current_dir, '../../results/embedding_clusters/clustering_result_eps0.002_min150.npz')
+    cluster_data = np.load(cluster_path)
+    clusters_cpu = cluster_data['clusters_cpu']  # shape: (N,), cluster label per point
+    
+    n_total = len(data_features)
+    n_cluster = len(clusters_cpu)
+    n_use = min(n_total, n_cluster)
+    
+    if n_total != n_cluster:
+        print(f"[WARNING] feature count ({n_total}) != clustering count ({n_cluster}), using min={n_use}")
+    
+    # Build (domain_id, cluster_id) -> weight_index mapping
+    # Uses same ordering as doremi_dataset.make_feature_datasets (train mode):
+    #   for domain i in 0..N-1: for sorted unique cluster_id: assign global index
+    per_dataset_len = n_cluster // len(dataset_list)
+    domain_cluster_to_weight_idx = {}
+    global_idx = 0
+    for i in range(len(dataset_list)):
+        seg_start = i * per_dataset_len
+        seg_end = (i + 1) * per_dataset_len
+        for cid in sorted(np.unique(clusters_cpu[seg_start:seg_end]).tolist()):
+            domain_cluster_to_weight_idx[(i, int(cid))] = global_idx
+            global_idx += 1
+    
+    # Collect data indices grouped by (domain, cluster)
+    cluster_to_indices = defaultdict(list)
+    for idx in range(n_use):
+        dom = idx // per_dataset_len
+        if dom >= len(dataset_list):
+            dom = len(dataset_list) - 1
+        cid = int(clusters_cpu[idx])
+        cluster_to_indices[(dom, cid)].append(idx)
+    
+    # ---- Truncated redistribution sampling (no replacement) ----
+    proportions = avg_weights / avg_weights.sum()
+    # np.random.seed(42)
+
+    # Phase 1: filter clusters — skip those with expected sample count < 1
+    valid_clusters = []       # (key, indices, weight_idx, proportion)
+    skipped_clusters = 0
+
+    for key, indices in cluster_to_indices.items():
+        weight_idx = domain_cluster_to_weight_idx.get(key)
+        if weight_idx is None:
+            continue
+        target = proportions[weight_idx] * n_use
+        if target < 1.0:
+            skipped_clusters += 1
+            continue
+        valid_clusters.append((key, indices, weight_idx, proportions[weight_idx]))
+
+    # Phase 2: determine total_desired, then allocate
+    if len(valid_clusters) == 0:
+        print("[WARNING] No valid clusters remain after filtering (all target < 1)")
+        sampled_indices = []
+    else:
+        valid_props = np.array([p for _, _, _, p in valid_clusters])
+        valid_props = valid_props / valid_props.sum()
+
+        cluster_sizes = [len(indices) for _, indices, _, _ in valid_clusters]
+        total_available = sum(cluster_sizes)
+
+        # Determine total_desired
+        if sample_ratio is not None:
+            total_desired = int(total_available * sample_ratio)
+            mode_str = f"sample_ratio={sample_ratio:.3f}"
+        else:
+            # Auto: per_dataset_len / max_domain_weight
+            per_domain_weight = np.zeros(len(dataset_list))
+            for (dom, cid), widx in domain_cluster_to_weight_idx.items():
+                per_domain_weight[dom] += proportions[widx]
+            max_domain_weight = per_domain_weight.max()
+            max_domain_id = int(np.argmax(per_domain_weight))
+            total_desired = int(per_dataset_len / max_domain_weight)
+            mode_str = (f"auto (per_dataset_len={per_dataset_len:,} / "
+                        f"max_domain_weight={max_domain_weight:.4f}@domain{max_domain_id})")
+
+        allocated = _truncated_proportional_allocation(
+            valid_props, cluster_sizes, total_desired=total_desired
+        )
+
+        # Phase 3: random sample (no replacement) from each cluster
+        sampled_indices = []
+        n_capped = 0
+        for i, ((key, indices, _, _), n_sample) in enumerate(zip(valid_clusters, allocated)):
+            n_sample = int(n_sample)
+            if n_sample <= 0:
+                continue
+            if n_sample >= len(indices):
+                n_sample = len(indices)
+                n_capped += 1
+            chosen = np.random.choice(indices, size=n_sample, replace=False)
+            sampled_indices.extend(chosen.tolist())
+
+        print(f"DoReMi sampling [{mode_str}]: "
+              f"kept {len(sampled_indices):,} / {total_available:,} samples "
+              f"({100 * len(sampled_indices) / total_available:.1f}%), "
+              f"total_desired={total_desired:,}, "
+              f"skipped {skipped_clusters} clusters (target < 1), "
+              f"{len(valid_clusters)} valid clusters ({n_capped} fully exhausted)")
+
+    sampled_indices.sort()
+    
+    # Filter all data arrays to sampled indices only
+    data_features = [data_features[i] for i in sampled_indices]
+    true_cards = [true_cards[i] for i in sampled_indices]
+    pg_est_cards = [pg_est_cards[i] for i in sampled_indices]
+    n_join_cols = [n_join_cols[i] for i in sampled_indices]
+    n_fanouts = [n_fanouts[i] for i in sampled_indices]
+    n_tables = [n_tables[i] for i in sampled_indices]
+    n_filter_cols = [n_filter_cols[i] for i in sampled_indices]
+    
+    return data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols
+
+
+def load_dataset_features_with_domain_sampling(bin_size, dataset_list, train_or_test, usage, sample_ratio=None):
+    '''
+    Two-stage sampling using DoReMi domain-level weights (avg_domain_weights).
+
+    Stage 1 — Domain-level proportional allocation:
+      Domains are sampled proportionally to avg_domain_weights from ce_doremi.json.
+      Truncated redistribution handles domains whose ideal allocation exceeds
+      their available data.
+
+    Stage 2 — Within-domain uniform sampling:
+      Within each selected domain, data points are sampled uniformly at random
+      (no per-cluster weighting). This contrasts with load_dataset_features_with_doremi_sampling
+      which uses fine-grained per-cluster weights (avg_domain_cluster_weights).
+
+    Total desired samples is determined by:
+    - If sample_ratio is given: total_desired = total_available × sample_ratio
+    - If sample_ratio is None (default): auto-computed as
+        total_desired = per_dataset_len / max_domain_weight
+
+    Args:
+        bin_size, dataset_list, train_or_test, usage: same as load_dataset_features
+        sample_ratio: optional float in (0, 1]; if None, auto-compute from domain weights
+
+    Returns:
+        Same format as load_dataset_features
+    '''
+    if train_or_test == 'train':
+        data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = \
+            load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+    else:
+        return load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+
+    import numpy as np
+    import json
+    from collections import defaultdict
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Load domain-level weights from DoReMi config
+    config_path = os.path.join(current_dir, '../../configs/ce_doremi_eps0.002_min150.json')
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    avg_domain_weights_dict = config['avg_domain_weights']  # {"0": w0, "1": w1, ...}
+
+    # Load clustering result to determine data counts per domain
+    cluster_path = os.path.join(current_dir, '../../results/embedding_clusters/clustering_result_eps0.002_min150.npz')
+    cluster_data = np.load(cluster_path)
+    clusters_cpu = cluster_data['clusters_cpu']
+
+    n_total = len(data_features)
+    n_cluster = len(clusters_cpu)
+    n_use = min(n_total, n_cluster)
+
+    if n_total != n_cluster:
+        print(f"[WARNING] feature count ({n_total}) != clustering count ({n_cluster}), using min={n_use}")
+
+    per_dataset_len = n_cluster // len(dataset_list)
+
+    # Group data indices by domain
+    domain_to_indices = defaultdict(list)
+    for idx in range(n_use):
+        dom = idx // per_dataset_len
+        if dom >= len(dataset_list):
+            dom = len(dataset_list) - 1
+        domain_to_indices[dom].append(idx)
+
+    # Compute per-domain weight and sizes
+    domain_weights = np.array([float(avg_domain_weights_dict[str(i)]) for i in range(len(dataset_list))], dtype=np.float64)
+    domain_props = domain_weights / domain_weights.sum()
+    domain_sizes = [len(domain_to_indices[i]) for i in range(len(dataset_list))]
+    total_available = sum(domain_sizes)
+
+    # Determine total_desired
+    if sample_ratio is not None:
+        total_desired = int(total_available * sample_ratio)
+        mode_str = f"sample_ratio={sample_ratio:.3f}"
+    else:
+        max_domain_weight = domain_weights.max()
+        max_domain_id = int(np.argmax(domain_weights))
+        total_desired = int(per_dataset_len / max_domain_weight)
+        mode_str = (f"auto (per_dataset_len={per_dataset_len:,} / "
+                    f"max_domain_weight={max_domain_weight:.4f}@domain{max_domain_id})")
+
+    # Stage 1: domain-level truncated proportional allocation
+    allocated = _truncated_proportional_allocation(domain_props, domain_sizes, total_desired)
+
+    # Stage 2: within-domain uniform random sampling
+    # np.random.seed(42)
+    sampled_indices = []
+    n_capped_domains = 0
+    for i, indices in enumerate(domain_to_indices.values()):
+        n_sample = int(allocated[i])
+        if n_sample <= 0:
+            continue
+        if n_sample >= len(indices):
+            n_sample = len(indices)
+            n_capped_domains += 1
+        chosen = np.random.choice(indices, size=n_sample, replace=False)
+        sampled_indices.extend(chosen.tolist())
+
+    sampled_indices.sort()
+
+    total_kept = len(sampled_indices)
+    print(f"DoReMi domain sampling [{mode_str}]: "
+          f"kept {total_kept:,} / {total_available:,} samples "
+          f"({100 * total_kept / total_available:.1f}%), "
+          f"total_desired={total_desired:,}, "
+          f"{len(dataset_list)} domains, {n_capped_domains} fully exhausted")
+
+    # Filter
+    data_features = [data_features[i] for i in sampled_indices]
+    true_cards = [true_cards[i] for i in sampled_indices]
+    pg_est_cards = [pg_est_cards[i] for i in sampled_indices]
+    n_join_cols = [n_join_cols[i] for i in sampled_indices]
+    n_fanouts = [n_fanouts[i] for i in sampled_indices]
+    n_tables = [n_tables[i] for i in sampled_indices]
+    n_filter_cols = [n_filter_cols[i] for i in sampled_indices]
+
+    return data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols
+
+
+def load_dataset_features_with_domain_weighted_sampling(bin_size, dataset_list, train_or_test, usage, sample_ratio=None):
+    '''
+    Two-stage sampling combining domain-level allocation with within-domain cluster-weighted
+    oversampling (with replacement).
+
+    Stage 1 — Domain-level proportional allocation:
+      Domains are sampled proportionally to avg_domain_weights from ce_doremi.json,
+      using truncated redistribution. Same as load_dataset_features_with_domain_sampling.
+
+    Stage 2 — Within-domain weighted sampling WITH REPLACEMENT:
+      Within each domain, data points are sampled with replacement, where the
+      probability is proportional to the cluster-level weight (avg_domain_cluster_weights).
+      This allows important clusters to be oversampled beyond their natural count.
+
+    Contrast with:
+    - _with_doremi_sampling: cluster-level across all domains, NO replacement
+    - _with_domain_sampling:   domain-level, uniform within domain, NO replacement
+    - This method:             domain-level, cluster-weighted within domain, WITH replacement
+
+    Total desired samples is determined by:
+    - If sample_ratio is given: total_desired = total_available × sample_ratio
+    - If sample_ratio is None (default): auto-computed as
+        total_desired = per_dataset_len / max_domain_weight
+
+    Args:
+        bin_size, dataset_list, train_or_test, usage: same as load_dataset_features
+        sample_ratio: optional float in (0, 1]; if None, auto-compute from domain weights
+
+    Returns:
+        Same format as load_dataset_features
+    '''
+    if train_or_test == 'train':
+        data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols = \
+            load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+    else:
+        return load_dataset_features(bin_size, dataset_list, train_or_test, usage)
+
+    import numpy as np
+    import json
+    from collections import defaultdict
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Load both domain-level and cluster-level weights
+    config_path = os.path.join(current_dir, '../../configs/ce_doremi_eps0.002_min150.json')
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    avg_domain_weights_dict = config['avg_domain_weights']
+    avg_cluster_weights = np.array(config['avg_domain_cluster_weights'], dtype=np.float64)
+
+    # Load clustering result
+    cluster_path = os.path.join(current_dir, '../../results/embedding_clusters/clustering_result_eps0.002_min150.npz')
+    cluster_data = np.load(cluster_path)
+    clusters_cpu = cluster_data['clusters_cpu']
+
+    n_total = len(data_features)
+    n_cluster = len(clusters_cpu)
+    n_use = min(n_total, n_cluster)
+
+    if n_total != n_cluster:
+        print(f"[WARNING] feature count ({n_total}) != clustering count ({n_cluster}), using min={n_use}")
+
+    per_dataset_len = n_cluster // len(dataset_list)
+
+    # Build (domain, cluster) -> weight_idx mapping and group data by domain
+    domain_cluster_to_weight_idx = {}
+    domain_to_indices = defaultdict(list)
+    global_idx = 0
+    for i in range(len(dataset_list)):
+        seg_start = i * per_dataset_len
+        seg_end = (i + 1) * per_dataset_len
+        for cid in sorted(np.unique(clusters_cpu[seg_start:seg_end]).tolist()):
+            domain_cluster_to_weight_idx[(i, int(cid))] = global_idx
+            global_idx += 1
+
+    for idx in range(n_use):
+        dom = idx // per_dataset_len
+        if dom >= len(dataset_list):
+            dom = len(dataset_list) - 1
+        domain_to_indices[dom].append(idx)
+
+    # ---- Stage 1: domain-level truncated proportional allocation ----
+    domain_weights = np.array([float(avg_domain_weights_dict[str(i)]) for i in range(len(dataset_list))], dtype=np.float64)
+    domain_props = domain_weights / domain_weights.sum()
+    domain_sizes = [len(domain_to_indices[i]) for i in range(len(dataset_list))]
+    total_available = sum(domain_sizes)
+
+    if sample_ratio is not None:
+        total_desired = int(total_available * sample_ratio)
+        mode_str = f"sample_ratio={sample_ratio:.3f}"
+    else:
+        max_domain_weight = domain_weights.max()
+        max_domain_id = int(np.argmax(domain_weights))
+        total_desired = int(per_dataset_len / max_domain_weight)
+        mode_str = (f"auto (per_dataset_len={per_dataset_len:,} / "
+                    f"max_domain_weight={max_domain_weight:.4f}@domain{max_domain_id})")
+
+    allocated = _truncated_proportional_allocation(domain_props, domain_sizes, total_desired)
+
+    # ---- Stage 2: within-domain cluster-weighted sampling WITH REPLACEMENT ----
+    cluster_props_global = avg_cluster_weights / avg_cluster_weights.sum()
+    # np.random.seed(42)
+    sampled_indices = []
+
+    for d in range(len(dataset_list)):
+        indices = domain_to_indices[d]
+        n_sample = int(allocated[d])
+        if n_sample <= 0 or len(indices) == 0:
+            continue
+
+        # Compute per-data-point sampling weight based on its cluster
+        point_weights = np.zeros(len(indices), dtype=np.float64)
+        for j, idx in enumerate(indices):
+            cid = int(clusters_cpu[idx])
+            widx = domain_cluster_to_weight_idx.get((d, cid))
+            if widx is not None:
+                point_weights[j] = cluster_props_global[widx]
+            else:
+                point_weights[j] = 0.0
+
+        weight_sum = point_weights.sum()
+        if weight_sum <= 0:
+            # Fallback: uniform if no weights available
+            point_weights = np.ones(len(indices)) / len(indices)
+        else:
+            point_weights = point_weights / weight_sum
+            
+        chosen = np.random.choice(indices, size=n_sample, replace=True, p=point_weights)
+        sampled_indices.extend(chosen.tolist())
+        
+        # not work
+        # cluster_to_indices = defaultdict(list)
+        # for idx in indices:
+        #     cid = int(clusters_cpu[idx])
+        #     cluster_to_indices[cid].append(idx)
+            
+        # domain_clusters = list(cluster_to_indices.keys())
+        # cluster_weights = np.zeros(len(domain_clusters), dtype=np.float64)
+        # for i, cid in enumerate(domain_clusters):
+        #     widx = domain_cluster_to_weight_idx.get((d, cid))
+        #     if widx is not None:
+        #         cluster_weights[i] = cluster_props_global[widx]
+        
+        # weight_sum = cluster_weights.sum()
+        # if weight_sum <= 0:
+        #     cluster_probs = np.ones(len(domain_clusters)) / len(domain_clusters)
+        # else:
+        #     cluster_probs = cluster_weights / weight_sum
+            
+        # chosen_cluster_indices = np.random.choice(
+        #     len(domain_clusters), size=n_sample, replace=True, p=cluster_probs
+        # )
+        
+        # cluster_counts = np.bincount(chosen_cluster_indices, minlength=len(domain_clusters))
+        # for i, count in enumerate(cluster_counts):
+        #     if count == 0:
+        #         continue
+        #     cid = domain_clusters[i]
+        #     pool = cluster_to_indices[cid]          
+        #     chosen_samples = np.random.choice(pool, size=count, replace=True)
+        #     sampled_indices.extend(chosen_samples.tolist())
+
+    sampled_indices.sort()
+    
+    domain_cluster_sample_count = defaultdict(lambda: defaultdict(int))
+
+    for idx in sampled_indices:
+        # 计算域（与原代码逻辑保持一致）
+        dom = idx // per_dataset_len
+        if dom >= len(dataset_list):
+            dom = len(dataset_list) - 1
+        # 获取簇编号
+        cid = int(clusters_cpu[idx])
+        domain_cluster_sample_count[dom][cid] += 1
+
+    # 打印结果
+    print("\n=== Per-domain cluster sample counts ===")
+    for dom in sorted(domain_cluster_sample_count.keys()):
+        print(f"Domain {dom}:")
+        total_domain = 0
+        for cid in sorted(domain_cluster_sample_count[dom].keys()):
+            count = domain_cluster_sample_count[dom][cid]
+            total_domain += count
+            # 也可以打印分配的权重用于对比
+            widx = domain_cluster_to_weight_idx.get((dom, cid))
+            weight = cluster_props_global[widx] if widx is not None else 0.0
+            print(f"  Cluster {cid:4d}: sampled {count:6d}  (weight {weight:.6f})")
+        print(f"  --> Total in domain {dom}: {total_domain}\n")
+
+    total_kept = len(sampled_indices)
+    print(f"DoReMi domain-weighted sampling [{mode_str}]: "
+          f"sampled {total_kept:,} (with replacement) / {total_available:,} original samples "
+          f"({100 * total_kept / total_available:.1f}%), "
+          f"total_desired={total_desired:,}, "
+          f"{len(dataset_list)} domains")
+
+    # Filter
+    data_features = [data_features[i] for i in sampled_indices]
+    true_cards = [true_cards[i] for i in sampled_indices]
+    pg_est_cards = [pg_est_cards[i] for i in sampled_indices]
+    n_join_cols = [n_join_cols[i] for i in sampled_indices]
+    n_fanouts = [n_fanouts[i] for i in sampled_indices]
+    n_tables = [n_tables[i] for i in sampled_indices]
+    n_filter_cols = [n_filter_cols[i] for i in sampled_indices]
+
+    return data_features, true_cards, pg_est_cards, n_join_cols, n_fanouts, n_tables, n_filter_cols

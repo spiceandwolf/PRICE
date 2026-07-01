@@ -22,7 +22,7 @@ from sklearn.utils import resample
 from torchdr import UMAP as torchdrUMAP
 
 from model.encoder import RegressionModel
-from utils.model.doremi_dataset import load_dataset_features, make_cluster_feature_dataloaders, make_feature_datasets, make_train_feature_dataloaders
+from utils.model.doremi_dataset import load_dataset_features, make_feature_datasets
 from utils.model.padding import features_padding
 from utils.model.args import get_args
 
@@ -441,7 +441,7 @@ def cumlDBSCAN_clustering(embeddings, labels, clusters_idx):
     #     (0.0120, 1000),
     # ]
     
-    test_configs = [(0.0020, 150), (0.0025, 200)]
+    test_configs = [(0.0035, 200)]
     
     print(f"{'参数':>6} | {'簇数':>5} | {'噪声%':>6} | {'最大簇':>7} | {'次大簇':>7}")
     print("-" * 60)
@@ -568,6 +568,140 @@ def visualiz_umap(embeddings, labels, n_components=2, n_neighbors=15):
     plt.show()
 
 
+def analyze_cluster_weight_distribution():
+    """
+    结合 ce_doremi.json 中的 avg_domain_weights 和 avg_domain_cluster_weights，
+    统计 clustering_result_eps0.002_min150.npz 中每个 domain 与 cluster 的
+    实际数量与期望数量，并输出对比表格。
+    
+    期望数量 = proportion(weight_idx) × 总样本数，其中 proportion 由
+    avg_domain_cluster_weights 归一化得到。
+    """
+    import json
+    from collections import Counter, defaultdict
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # ---- 加载配置文件 ----
+    config_path = os.path.join(current_dir, 'configs/ce_doremi_eps0.002_min150.json')
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    
+    avg_domain_weights = config['avg_domain_weights']
+    avg_cluster_weights = np.array(config['avg_domain_cluster_weights'], dtype=np.float64)
+    
+    # ---- 加载聚类结果 ----
+    cluster_path = os.path.join(current_dir, 'results/embedding_clusters/clustering_result_eps0.002_min150.npz')
+    cluster_data = np.load(cluster_path)
+    clusters_cpu = cluster_data['clusters_cpu']
+    labels = cluster_data['labels']
+    
+    N = len(clusters_cpu)
+    num_datasets = 26  # 与 TRAIN_LIST 一致
+    per_dataset_len = N // num_datasets
+    print(f"\n{'='*80}")
+    print(f"  DoReMi 聚类权重分布分析")
+    print(f"  总样本数: {N:,}  |  数据集数: {num_datasets}  |  每集: {per_dataset_len:,}")
+    print(f"{'='*80}\n")
+    
+    # ---- 构建 (domain, cluster) → weight_idx 映射 ----
+    domain_cluster_to_weight_idx = {}
+    global_idx = 0
+    for i in range(num_datasets):
+        seg_start = i * per_dataset_len
+        seg_end = (i + 1) * per_dataset_len
+        for cid in sorted(np.unique(clusters_cpu[seg_start:seg_end]).tolist()):
+            domain_cluster_to_weight_idx[(i, int(cid))] = global_idx
+            global_idx += 1
+    
+    # ---- 统计实际数量 ----
+    actual_counts = Counter()
+    for i in range(N):
+        domain = int(labels[i])
+        cluster = int(clusters_cpu[i])
+        actual_counts[(domain, cluster)] += 1
+    
+    # ---- 归一化权重→期望比例 ----
+    proportions = avg_cluster_weights / avg_cluster_weights.sum()
+    
+    # ---- Domain 级统计 ----
+    print(f"{'Domain':>6}  {'DomainW':>12}  {'Actual':>10}  {'Expected':>10}  {'Ratio':>8}  {'Samples%':>8}")
+    print(f"{'------':>6}  {'----------':>12}  {'--------':>10}  {'--------':>10}  {'------':>8}  {'-------':>8}")
+    
+    domain_actual_counts = Counter()
+    domain_expected_counts = Counter()
+    
+    for domain in range(num_datasets):
+        domain_actual = 0
+        domain_expected = 0
+        for (d, c), idx in domain_cluster_to_weight_idx.items():
+            if d == domain:
+                domain_actual += actual_counts.get((domain, c), 0)
+                domain_expected += proportions[idx] * N
+        
+        domain_actual_counts[domain] = domain_actual
+        domain_expected_counts[domain] = domain_expected
+        
+        dw = float(avg_domain_weights[str(domain)])
+        ratio = domain_actual / domain_expected if domain_expected > 0 else 0
+        pct = 100 * domain_actual / N
+        print(f"{domain:>6}  {dw:>12.8f}  {domain_actual:>10,}  {domain_expected:>10,.0f}  {ratio:>8.4f}  {pct:>7.3f}%")
+    
+    # ---- Cluster 级统计（逐 domain） ----
+    print(f"\n{'='*80}")
+    print(f"  Cluster 级详细统计（每个 domain 内按 cluster 展开）")
+    print(f"{'='*80}")
+    
+    for domain in range(num_datasets):
+        print(f"\n--- Domain {domain}  (Weight={float(avg_domain_weights[str(domain)]):.8f}) ---")
+        print(f"{'Cluster':>8}  {'Weight':>14}  {'Actual':>10}  {'Expected':>10}  {'Ratio':>8}  {'Act%':>7}")
+        print(f"{'-------':>8}  {'------':>14}  {'------':>10}  {'--------':>10}  {'-----':>8}  {'----':>7}")
+        
+        # 收集该 domain 的 cluster（排序）
+        cluster_ids = []
+        for (d, c), idx in sorted(domain_cluster_to_weight_idx.items(), key=lambda x: x[1]):
+            if d == domain:
+                cluster_ids.append(c)
+        
+        for cid in cluster_ids:
+            idx = domain_cluster_to_weight_idx[(domain, cid)]
+            actual = actual_counts.get((domain, cid), 0)
+            expected = proportions[idx] * N
+            weight = avg_cluster_weights[idx]
+            ratio = actual / expected if expected > 0 else 0
+            act_pct = 100 * actual / domain_actual_counts[domain]
+            print(f"{cid:>8}  {weight:>14.10f}  {actual:>10,}  {expected:>10,.0f}  {ratio:>8.4f}  {act_pct:>6.2f}%")
+        
+        # domain 汇总行
+        print(f"{'  SUM':>8}  {float(avg_domain_weights[str(domain)]):>14.8f}  "
+              f"{domain_actual_counts[domain]:>10,}  {domain_expected_counts[domain]:>10,.0f}  "
+              f"{domain_actual_counts[domain]/domain_expected_counts[domain] if domain_expected_counts[domain] > 0 else 0:>8.4f}  "
+              f"{100*domain_actual_counts[domain]/N:>6.2f}%")
+    
+    # ---- 全局汇总 ----
+    print(f"\n{'='*80}")
+    print(f"  全局汇总")
+    print(f"{'='*80}")
+    total_actual = sum(domain_actual_counts.values())
+    total_expected = sum(domain_expected_counts.values())
+    print(f"  总实际样本: {total_actual:,}")
+    print(f"  总期望样本: {total_expected:,.0f}")
+    print(f"  全局比例  : {total_actual/total_expected:.4f}" if total_expected > 0 else "N/A")
+    
+    # 找出 ratio 偏离最大的 clusters
+    print(f"\n  偏离最大的 Clusters（|Ratio-1| 最大的 10 个）:")
+    deviations = []
+    for (d, c), idx in domain_cluster_to_weight_idx.items():
+        actual = actual_counts.get((d, c), 0)
+        expected = proportions[idx] * N
+        ratio = actual / expected if expected > 0 else 0
+        deviations.append((abs(ratio - 1), d, c, ratio, actual, expected))
+    deviations.sort(reverse=True)
+    print(f"  {'Rank':>4}  {'Domain':>6}  {'Cluster':>8}  {'Ratio':>8}  {'Actual':>10}  {'Expected':>10}")
+    for rank, (_, d, c, ratio, actual, expected) in enumerate(deviations[:10]):
+        print(f"  {rank+1:>4}  {d:>6}  {c:>8}  {ratio:>8.4f}  {actual:>10,}  {expected:>10,.0f}")
+
+
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 SEED = 42
@@ -609,6 +743,9 @@ else:
                                         train_n_join_cols, train_n_fanouts, train_n_tables, train_n_filter_cols,
                                         train_or_test='train', domain_ids=domain_ids, cluster_idx=cluster_idx)
 
+    def make_cluster_feature_dataloaders(train_dataset, train_batch_size):
+        from torch.utils.data import DataLoader
+        return DataLoader(train_dataset, batch_size=train_batch_size, shuffle=False)
 
     train_loader = make_cluster_feature_dataloaders(train_dataset, args.batch_size)
 
@@ -668,8 +805,9 @@ modes = [
     # 'alignment ratio',
     # 'permutation_test',
     # 'search_k_distance',
-    'cumlDBSCAN',
+    # 'cumlDBSCAN',
     # 'cluster_analysis',
+    'analyze_cluster_weight_distribution',
     ]
 
 if 'analysis Schema-Specific Aggregation' in modes:
@@ -706,3 +844,6 @@ if 'cluster_analysis' in modes:
 
 if 'UMAP Visualization' in modes:
     visualiz_umap(embeddings.cpu().numpy(), labels.cpu().numpy(), n_components=2, n_neighbors=n_neighbors)
+    
+if 'analyze_cluster_weight_distribution' in modes:
+    analyze_cluster_weight_distribution()

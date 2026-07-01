@@ -36,6 +36,9 @@ def get_args():
     arg_parser.add_argument('--gradient_checkpointing', action='store_true', default=True)
     arg_parser.add_argument('--no_gradient_checkpointing', dest='gradient_checkpointing', action='store_false')
 
+    arg_parser.add_argument('--resume', action='store_true', default=False, help='resume training from checkpoint')
+    arg_parser.add_argument('--checkpoint_path', type=str, default='./results/checkpoint.pth', help='path to save/load checkpoint')
+
     args = arg_parser.parse_args()
     return args
 
