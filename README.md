@@ -1,6 +1,6 @@
-# Pretraining Cardinality Estimators on Less Datasets: Finding Special Databases when Training
+# Not All Databases Matter: Datasets Reweighting for Pre-trained Cardinality Estimators
 
-This is the code of our paper: **Pretraining Cardinality Estimators on Less Datasets: Finding Special Databases when Training**
+This is the code of our paper: **Not All Databases Matter: Datasets Reweighting for Pre-trained Cardinality Estimators**
 
 If you have any questions about our methodology or this repository, please contact us.
 
@@ -24,12 +24,7 @@ The project directory structure is organized as follows:
 │   │   ├── finetune
 │   │   ├── pretrain
 │   │   └── test
-│   ├── workloads_v0
-│   │   ├── finetune
-│   │   ├── pretrain
-│   │   └── test
 │   └── workloads_v0_corrected
-│       ├── finetune
 │       ├── pretrain
 │       └── test
 ├── model
@@ -53,51 +48,49 @@ conda env create -f environment.yml
 
 We use [Pilotscope](https://github.com/alibaba/pilotscope) to calculate p-error, and evaluate end-to-end time. Installation instructions are in the [documentation](https://woodybryant.github.io/PilotScopeDoc.io/).
 
-## Configuration
+## Train
 
-**Step 1:**
+**Step 1: train a Price model**
 
-Since our experiment is based on PRICE, please refer to [PRICE](https://github.com/StCarmen/PRICE.git) project for data downloading and preprocessing procedures.
+Since our experiment is based on PRICE, please refer to [PRICE](https://github.com/StCarmen/PRICE.git) project for data downloading and preprocessing procedures. 
+We use model_params.pth provided by [PRICE](https://github.com/StCarmen/PRICE.git) directly as a reference model.
 
-There are three workload-related directories under the `datas/` path:
-    - `datas/workloads/`: The path for currently used workloads in [PRICE](https://github.com/StCarmen/PRICE.git) project(after 2025/05/01).
-    - `datas/workloads_v0/`: The path for previously used workloads in [PRICE](https://github.com/StCarmen/PRICE.git) project(before 2025/05/01). SQLs in this directory have some mistakes aboat true cardinalities in each sql file. These sql files can get from `datas/workloads/` in [url](https://github.com/StCarmen/PRICE/tree/603f91bdd541d60025b414c3994d0af2d0c93fb9#)
-    - `datas/workloads_v0_corrected/`: The path for some workloads which have been corrected in `datas/workloads_v0/`. These workloads are *accidents*, *baseball*, *carcinogenesis*, *consumer*, *hockey*, *ssb* and *talkingdata*.
+**Step 2: cluster pretraining datasets**
 
-**Step 2:**
+use the methods in `embedding_clustering.py`, and you will get `clustering_result_eps{eps}_min{min_samples}.npz` for embedding_dataset_cluster mapping.
 
-The file `datas/baseline_domain_weights.json` contains the initial weight mappings for all training datasets. Ensure this file is properly configured prior to training. 
-The file `results/model_params.pth` is used as the reference model. 
-The hyperparameter configurations are defined within the `utils/model/args.py` file.
+clustering results under different eps values.
 
-We first show the commands of quantifying domain-specific contributions in training data in our paper. 
+    (eps, min_samples) | # of clusters | noise % | # in the largest cluster | # in the second largest cluster
+    ------------------------------------------------------------
+    (0.0010, 100) |    59 |    3.7 | 1,230,309 |   2,336
+    (0.0020, 100) |    19 |    1.4 | 1,276,582 |     841
+    (0.0030, 100) |     4 |    0.5 | 1,292,952 |     121
+    (0.0020, 150) |    18 |    2.2 | 1,265,604 |     894
+    (0.0020, 200) |    17 |    3.1 | 1,250,468 |   2,478
+    (0.0025, 200) |    12 |    2.1 | 1,268,763 |     706
+    (0.0035, 200) |     6 |    0.9 | 1,285,990 |     450
+    (0.0050, 200) |     4 |    0.3 | 1,294,947 |     508
+    (0.0040, 500) |     2 |    2.3 | 1,269,562 |     846
+    (0.0060, 500) |     1 |    0.9 | 1,287,879 |       0
+    (0.0080, 500) |     1 |    0.3 | 1,295,872 |       0
+    (0.0060, 1000) |     1 |    1.9 | 1,275,012 |       0
+    (0.0090, 1000) |     1 |    0.7 | 1,290,387 |       0
+    (0.0120, 1000) |     1 |    0.3 | 1,295,478 |       0
 
+**Step 3: train a proxy model**
+
+The learning rate needs to be scaled with the batch size.
 ```shell
-python doremi_pretrain.py --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 1500 --lr 1e-5
+bash run_ddp.sh 4
 ```
+the results are `configs/{experiment_name}.json` and `results/{experiment_name}_pretrain_params.pth`
 
-Then, this command's output is under the  `configs/` path. 
-    - `configs/doremi_pretrain_params.json` is the file corresponds to the content of *Table 3 in Appendix A* of the paper. This file contains the quantified weights among datasets in the `datas/workloads/` path.
-    - `configs/doremi_pretrain_params_v0.json` contains the quantified weights among datasets in the `datas/workloads_v0/` path.
+**Step 4 & 5: CR Sampling and train a PRICE w/ CEDaRe model**
 
-**Step 3:**
-
-Features for [PRICE](https://github.com/StCarmen/PRICE.git) training are regenerated by sampling from the training data according to the weights specified in the file `configs/doremi_pretrain_params.json`.
-
-A bash command is provided for this purpose:
-
-```shell
-sh setup/regenerate.sh
-```
-
-Then we proceed to retrain the PRICE model using the newly generated features:
 ```shell
 python pretrain.py --query_hidden_dim 512 --final_hidden_dim 1024 --n_embd 256 --n_layers 6 --n_heads 8 --dropout_rate 0.2 --batch_size 1500 --lr 2.85e-5
 ```
-
-The *Simple PRICE* in our paper is  `results/doremi_new_pretrain_params.pth`.
-
-The *Baseball PRICE* in our paper is  `results/baseball_pretrain_params_wf.pth`. It is the pretrained model utilized both *baseball* workloads in `datas/workloads_v0/` and `datas/workloads_v0_corrected/`.
 
 ## Evaluation
 
@@ -107,88 +100,24 @@ To evaluate the estimation accuracy of the pretrained model on unseen datasets (
 python evaluate.py
 ```
 
-During the evaluation process, certain metrics related to estimation accuracy (e.g., q-error) will be displayed. For example, *Simple PRICE*'s Q-error:
-
-```shell
-imdb loss: 1.1657719612121582
-imdb q-error: 30%: 1.3221   50%: 1.6579   80%: 3.3948   90%: 5.3248   95%: 8.4837   99%: 47.2758
-stats loss: 3.482184886932373
-stats q-error: 30%: 1.4921   50%: 2.1337   80%: 5.6806   90%: 14.0866   95%: 41.8693   99%: 1923.8892
-ergastf1 loss: 1.358346700668335
-ergastf1 q-error: 30%: 1.2875   50%: 1.5982   80%: 3.5952   90%: 7.3137   95%: 13.801   99%: 37.823
-genome loss: 2.4879724979400635
-genome q-error: 30%: 1.4074   50%: 2.173   80%: 6.3593   90%: 7.5092   95%: 30.0471   99%: 143.1136
-```
-
-To evaluate the estimation accuracy of *Baseball PRICE* on the each of datasets (*accidents*, *carcinogenesis*, *consumer*, *hockey*, *ssb* and *talkingdata*), use the following command:
-
-```shell
-python evaluate_doremi.py
-```
-
 These commands' outputs are `results/{dataset}_perror_input.sql`. We use `benchmark/perror.py` and `benchmark/e2e.py` to get p-error and end-to-end time.
 
-The original data of Table 2 and Figure 1 in our paper.
+more experiment results about other ML-based model:
 
+    IMDB:
+    model & 50% qerror & 90% qerror & 95% qerror & 99% qerror & E2E times
+    MSCN 4.13 & 46.40 & 141.12 & 2512.29 & 1565.16
+    NeuroCard & 1.66 & 7.80 & 14.25 & 22.22 & 1332.57
+    QSPN & 2.38 & 9.26 & 23.60 & 32.52 & 1294.94
 
-qerror:
-```shell
-    accidents:
-        pg: 30%: 11.6877   50%: 80.8574   80%: 3636.2562   90%: 32657.1712   95%: 254496.8906   99%: 6783716.8679   100%: 1189763968.5
-        mscn: Median: 2.3792315881157458 90th percentile: 12.859676438015885 95th percentile: 28.762032085561497 99th percentile: 137.4044000000001 Max: 172.55992923485184 Mean: 8.252724357473419  
-        ours: 30%: 2.6628   50%: 4.0229   80%: 10.3132   90%: 33.64   95%: 62.0322   99%: 90.5945   100%: 265.5589
-    carcinogenesis:
-        pg: 30%: 5.8737   50%: 22.3343   80%: 339.945   90%: 1558.0285   95%: 5615.8893   99%: 65075.375   100%: 26386426.5
-        mscn: Median: 1.2770794966236956 90th percentile: 4.764867761652328 95th percentile: 38.28659858394534 99th percentile: 44.46534653465346 Max: 1636.264913803795 Mean: 5.382034163737616 
-        ours: 30%: 1.4077   50%: 2.0333   80%: 4.6817   90%: 7.8963   95%: 11.5834   99%: 23.7657   100%: 116.7644
-    consumer:
-        pg: 30%: 5.8717   50%: 23.6985   80%: 367.9431   90%: 1588.2643   95%: 5224.7386   99%: 30831.945   100%: 436069.6429
-        mscn: Median: 1.1932463872615129 90th percentile: 2.047357634985432 95th percentile: 2.807815870931432 99th percentile: 17.80240688878755 Max: 34.45711264963678 Mean: 1.7951921215770403 
-        qspn: Median: 1.92 90th percentile: 9810.0 95th percentile: 64798.0 99th percentile: 2622174.0 Max: 2637794.0 Mean: 58875.79
-        ours: 30%: 1.6518   50%: 1.9396   80%: 2.7708   90%: 3.5775   95%: 5.2298   99%: 33.1506   100%: 104.2008
-    hockey:
-        pg: 30%: 4.9   50%: 16.2895   80%: 188.6522   90%: 830.7002   95%: 2730.3005   99%: 27839.7776   100%: 1680091.375
-        mscn: Median: 1.9950641563819709 90th percentile: 8.824060869515415 95th percentile: 12.36 99th percentile: 35.61010909961702 Max: 361.2857142857143 Mean: 4.187611906704775 
-        ours: 30%: 1.6907   50%: 2.2476   80%: 3.8698   90%: 5.6645   95%: 8.6364   99%: 43.6009   100%: 219.1962
-    ssb:
-        pg: 30%: 5.2881   50%: 19.0755   80%: 310.9212   90%: 1655.4175   95%: 6304.4467   99%: 76833.8529   100%: 1999667.5
-        mscn: Median: 1.2211637794907775 90th percentile: 2.1613969765103067 95th percentile: 2.6103419811320747 99th percentile: 6.481956552205302 Max: 10.175879396984925 Mean: 1.51925219725254 
-        neurocard: median 1.0455720326457405 95th 1.8536584386684134 99th 9.466131970043968 max 15.217469879518072
-        ours: 30%: 1.6288   50%: 2.032   80%: 2.901   90%: 3.7066   95%: 4.6173   99%: 10.0226   100%: 21.3001
-    talkingdata:
-        pg: 30%: 17.3133   50%: 137.6275   80%: 9978.9184   90%: 103797.1359   95%: 727204.7745   99%: 21870220.5552   100%: 11700462592.5
-        mscn: Median: 2.0079948141745896 90th percentile: 11.63364413364413 95th percentile: 23.451775174370866 99th percentile: 160.43436325521148 Max: 27338.835373075406 Mean: 40.96490352533517 
-        ours: 30%: 1.7972   50%: 3.3152   80%: 19.2946   90%: 84.5999   95%: 240.6421   99%: 1436.9537   100%: 7006.1535
-```
+    STATS:
+    MSCN & 2.78 & 49.03 & 157.07 & 2464.10 & 175286.09
+    NeuroCard & 1987.90 & $3.02 \times 10^6$ & $9.80 \times 10^6$ & $1.66 \times 10^8$ & 19105.53
+    QSPN & 1.93 & 22.04 & 69.44 & 1336.42 & 14576.30
 
-Experiments on each dataset are repeated 5 times, and the final result is the average of these 5 repetitions.
+    ErgastF1:
+    MSCN & 5.15 & 51.41 & 92.80 & 559.77 & 16130.86
 
-```shell
-e2e times: 
-    accidents:
-        optimal: 393.93 | 394.76 | 395.04 | 395.67 | 395.68 
-        mscn: 408.52 | 407.22 | 407.67 | 407.81 | 409.07 
-        ours: 409.92 | 410.96 | 410.37 | 410.34 | 411.89
-    carcinogenesis:
-        optimal: 33.30 | 34.18 | 34.38 | 33.35 | 33.43
-        mscn: 35.25 | 35.80 | 35.92 | 35.34 | 35.55
-        ours: 34.24 | 34.09 | 34.59 | 34.11 | 34.13
-    consumer:
-        optimal: 33.74 | 34.34 | 34.30 | 34.68 | 35.42
-        mscn: 34.11 | 34.53 | 35.44 | 34.74 | 34.66
-        ours: 35.74 | 35.27 | 34.97 | 35.33 | 35.05
-        qspn: 37.4352 | 36.8304 | 37.078 | 37.0313 | 36.6994
-    hockey:
-        optimal: 2.75 | 3.08 | 2.60 | 3.01 | 2.61
-        mscn: 3.16 | 3.65 | 3.18 | 3.32 | 3.11
-        ours: 2.95 | 2.91 | 2.88 | 3.07 | 2.62
-    ssb:
-        optimal: 108.9652 | 108.9182 | 108.9867 | 109.2484 | 109.0196
-        mscn: 129.30 | 129.15 | 129.91 | 130.16 | 129.97
-        ours: 131.60 | 131.97 | 132.16 | 131.64 | 132.13
-        neurocard: 107.6076 | 108.3027 | 108.0316 | 107.7736 | 108.1997
-    talkingdata:
-        optimal: 389.34 | 391.05 | 392.52 | 391.83 | 391.49
-        mscn: 409.89 | 410.37 | 411.34 | 410.34 | 411.53
-        ours: 395.08 | 394.40 | 393.42 | 393.54 | 397.37
-```
+    Genome:
+    MSCN & 1.34 & 5.07 & 5.59 & 6.87 & 2660.87
+    NeuroCard & 1.05 & 22.42 & 64.65 & 121.90 & 2516.27
